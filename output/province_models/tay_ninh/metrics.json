@@ -1,0 +1,219 @@
+{
+  "province": "Tây Ninh",
+  "slug": "tay_ninh",
+  "n_rows_province": 2880,
+  "stations": [
+    "LA_TAAN_KHIKXQ"
+  ],
+  "horizon_hours": 24,
+  "n_train": 1982,
+  "n_val": 283,
+  "n_test": 567,
+  "split_ratio": {
+    "train": 0.7,
+    "val": 0.1,
+    "test": 0.2
+  },
+  "train_end": "2026-08-24 13:00:00",
+  "val_end": "2026-09-05 08:00:00",
+  "models": [
+    "linear_regression",
+    "svr",
+    "random_forest",
+    "xgboost",
+    "lightgbm"
+  ],
+  "features": [
+    "pm25_lag0",
+    "pm25_lag1",
+    "pm25_lag3",
+    "pm25_lag6",
+    "pm25_lag12",
+    "pm25_lag24",
+    "pm25_roll6",
+    "pm25_roll24",
+    "temperature_2m",
+    "relative_humidity_2m",
+    "dew_point_2m",
+    "surface_pressure",
+    "precipitation",
+    "wind_speed_10m",
+    "wind_direction_10m",
+    "boundary_layer_height",
+    "wind_dir_sin",
+    "wind_dir_cos",
+    "dew_point_deficit",
+    "ventilation_coef",
+    "temp_diff_24h",
+    "pressure_diff_24h",
+    "pblh_diff_24h",
+    "precip_sum_24h",
+    "hour",
+    "day_of_week",
+    "is_weekend"
+  ],
+  "baseline": {
+    "val": {
+      "rmse": 11.083793007966653,
+      "mae": 7.820396531425624,
+      "r2": -0.2683182140986562
+    },
+    "test": {
+      "rmse": 23.576581208876803,
+      "mae": 16.343625286149948,
+      "r2": 0.35790969199921363
+    }
+  },
+  "results": {
+    "linear_regression": {
+      "best_iteration": null,
+      "val": {
+        "rmse": 10.172885827256684,
+        "mae": 8.203770435828616,
+        "r2": -0.0684144588434723
+      },
+      "test": {
+        "rmse": 25.196310252066695,
+        "mae": 16.307060209993622,
+        "r2": 0.2666549736832914
+      },
+      "rmse_improvement_pct": -6.870075982772468,
+      "beats_baseline": false,
+      "per_station": {
+        "LA_TAAN_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 23.576581208876803,
+            "mae": 16.343625286149948,
+            "r2": 0.35790969199921363
+          },
+          "linear_regression": {
+            "rmse": 25.196310252066695,
+            "mae": 16.307060209993622,
+            "r2": 0.2666549736832914
+          }
+        }
+      }
+    },
+    "svr": {
+      "best_iteration": null,
+      "val": {
+        "rmse": 9.462586927876579,
+        "mae": 7.648203343188601,
+        "r2": 0.07557606769168024
+      },
+      "test": {
+        "rmse": 31.506872215341723,
+        "mae": 19.226191076065085,
+        "r2": -0.14668739695815858
+      },
+      "rmse_improvement_pct": -33.63630602845459,
+      "beats_baseline": false,
+      "per_station": {
+        "LA_TAAN_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 23.576581208876803,
+            "mae": 16.343625286149948,
+            "r2": 0.35790969199921363
+          },
+          "svr": {
+            "rmse": 31.506872215341723,
+            "mae": 19.226191076065085,
+            "r2": -0.14668739695815858
+          }
+        }
+      }
+    },
+    "random_forest": {
+      "best_iteration": null,
+      "val": {
+        "rmse": 10.80145891755054,
+        "mae": 8.378637257887219,
+        "r2": -0.20452620409352784
+      },
+      "test": {
+        "rmse": 27.285730321969858,
+        "mae": 17.797507705618987,
+        "r2": 0.13998580193735843
+      },
+      "rmse_improvement_pct": -15.732345076802423,
+      "beats_baseline": false,
+      "per_station": {
+        "LA_TAAN_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 23.576581208876803,
+            "mae": 16.343625286149948,
+            "r2": 0.35790969199921363
+          },
+          "random_forest": {
+            "rmse": 27.285730321969858,
+            "mae": 17.797507705618987,
+            "r2": 0.13998580193735843
+          }
+        }
+      }
+    },
+    "xgboost": {
+      "best_iteration": 23,
+      "val": {
+        "rmse": 9.878059431581503,
+        "mae": 7.901565984582109,
+        "r2": -0.00738315748034335
+      },
+      "test": {
+        "rmse": 29.16680531966048,
+        "mae": 18.312987490856724,
+        "r2": 0.01731985357684651
+      },
+      "rmse_improvement_pct": -23.71091915853731,
+      "beats_baseline": false,
+      "per_station": {
+        "LA_TAAN_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 23.576581208876803,
+            "mae": 16.343625286149948,
+            "r2": 0.35790969199921363
+          },
+          "xgboost": {
+            "rmse": 29.16680531966048,
+            "mae": 18.312987490856724,
+            "r2": 0.01731985357684651
+          }
+        }
+      }
+    },
+    "lightgbm": {
+      "best_iteration": 13,
+      "val": {
+        "rmse": 10.079207087760242,
+        "mae": 8.126883722407243,
+        "r2": -0.04882770949638804
+      },
+      "test": {
+        "rmse": 29.795701921088124,
+        "mae": 18.750641896655708,
+        "r2": -0.02551424645326561
+      },
+      "rmse_improvement_pct": -26.3783822476762,
+      "beats_baseline": false,
+      "per_station": {
+        "LA_TAAN_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 23.576581208876803,
+            "mae": 16.343625286149948,
+            "r2": 0.35790969199921363
+          },
+          "lightgbm": {
+            "rmse": 29.795701921088124,
+            "mae": 18.750641896655708,
+            "r2": -0.02551424645326561
+          }
+        }
+      }
+    }
+  }
+}

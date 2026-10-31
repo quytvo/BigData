@@ -1,0 +1,287 @@
+{
+  "province": "Hưng Yên",
+  "slug": "hung_yen",
+  "n_rows_province": 5760,
+  "stations": [
+    "HY_NGVL_KHIKXQ",
+    "TB_TRTT_KHIKXQ"
+  ],
+  "horizon_hours": 24,
+  "n_train": 3964,
+  "n_val": 566,
+  "n_test": 1134,
+  "split_ratio": {
+    "train": 0.7,
+    "val": 0.1,
+    "test": 0.2
+  },
+  "train_end": "2026-08-24 13:00:00",
+  "val_end": "2026-09-05 08:00:00",
+  "models": [
+    "linear_regression",
+    "svr",
+    "random_forest",
+    "xgboost",
+    "lightgbm"
+  ],
+  "features": [
+    "pm25_lag0",
+    "pm25_lag1",
+    "pm25_lag3",
+    "pm25_lag6",
+    "pm25_lag12",
+    "pm25_lag24",
+    "pm25_roll6",
+    "pm25_roll24",
+    "temperature_2m",
+    "relative_humidity_2m",
+    "dew_point_2m",
+    "surface_pressure",
+    "precipitation",
+    "wind_speed_10m",
+    "wind_direction_10m",
+    "boundary_layer_height",
+    "wind_dir_sin",
+    "wind_dir_cos",
+    "dew_point_deficit",
+    "ventilation_coef",
+    "temp_diff_24h",
+    "pressure_diff_24h",
+    "pblh_diff_24h",
+    "precip_sum_24h",
+    "hour",
+    "day_of_week",
+    "is_weekend",
+    "station_HY_NGVL_KHIKXQ",
+    "station_TB_TRTT_KHIKXQ"
+  ],
+  "baseline": {
+    "val": {
+      "rmse": 32.740960278436845,
+      "mae": 23.88724355438988,
+      "r2": -0.27610655851601296
+    },
+    "test": {
+      "rmse": 25.535939638413748,
+      "mae": 19.60612015509556,
+      "r2": 0.12667557040218402
+    }
+  },
+  "results": {
+    "linear_regression": {
+      "best_iteration": null,
+      "val": {
+        "rmse": 27.007098627237728,
+        "mae": 20.48059654089741,
+        "r2": 0.13171964384742985
+      },
+      "test": {
+        "rmse": 22.00748925278581,
+        "mae": 17.16131787162607,
+        "r2": 0.3513462702785196
+      },
+      "rmse_improvement_pct": 13.817585863651107,
+      "beats_baseline": true,
+      "per_station": {
+        "HY_NGVL_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 26.333770240211116,
+            "mae": 20.316046533493626,
+            "r2": 0.12646953158070307
+          },
+          "linear_regression": {
+            "rmse": 23.686490003983838,
+            "mae": 18.963949994331685,
+            "r2": 0.2932702196347692
+          }
+        },
+        "TB_TRTT_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 24.71236474660392,
+            "mae": 18.896193776697498,
+            "r2": 0.05009462527895803
+          },
+          "linear_regression": {
+            "rmse": 20.189337723514846,
+            "mae": 15.35868574892046,
+            "r2": 0.36599033269724146
+          }
+        }
+      }
+    },
+    "svr": {
+      "best_iteration": null,
+      "val": {
+        "rmse": 27.764718363376687,
+        "mae": 20.392982346621263,
+        "r2": 0.08232128248111115
+      },
+      "test": {
+        "rmse": 23.892609598496072,
+        "mae": 18.231974784564276,
+        "r2": 0.2354619642735556
+      },
+      "rmse_improvement_pct": 6.435361546068238,
+      "beats_baseline": true,
+      "per_station": {
+        "HY_NGVL_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 26.333770240211116,
+            "mae": 20.316046533493626,
+            "r2": 0.12646953158070307
+          },
+          "svr": {
+            "rmse": 25.512606189552994,
+            "mae": 20.08658701142374,
+            "r2": 0.18009860710926473
+          }
+        },
+        "TB_TRTT_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 24.71236474660392,
+            "mae": 18.896193776697498,
+            "r2": 0.05009462527895803
+          },
+          "svr": {
+            "rmse": 22.154469352008306,
+            "mae": 16.37736255770481,
+            "r2": 0.23656083011881435
+          }
+        }
+      }
+    },
+    "random_forest": {
+      "best_iteration": null,
+      "val": {
+        "rmse": 25.88880361699853,
+        "mae": 19.516204515344374,
+        "r2": 0.20213745658637705
+      },
+      "test": {
+        "rmse": 22.304034552425307,
+        "mae": 17.889571507953967,
+        "r2": 0.333747608193558
+      },
+      "rmse_improvement_pct": 12.656299833692753,
+      "beats_baseline": true,
+      "per_station": {
+        "HY_NGVL_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 26.333770240211116,
+            "mae": 20.316046533493626,
+            "r2": 0.12646953158070307
+          },
+          "random_forest": {
+            "rmse": 24.357980850205497,
+            "mae": 19.63753223473866,
+            "r2": 0.2526319240571754
+          }
+        },
+        "TB_TRTT_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 24.71236474660392,
+            "mae": 18.896193776697498,
+            "r2": 0.05009462527895803
+          },
+          "random_forest": {
+            "rmse": 20.04067572544864,
+            "mae": 16.141610781169273,
+            "r2": 0.3752928797961528
+          }
+        }
+      }
+    },
+    "xgboost": {
+      "best_iteration": 116,
+      "val": {
+        "rmse": 26.68732413907555,
+        "mae": 20.060814391287227,
+        "r2": 0.15215946565024363
+      },
+      "test": {
+        "rmse": 21.594229533629793,
+        "mae": 17.749193868381663,
+        "r2": 0.3754785643271432
+      },
+      "rmse_improvement_pct": 15.435931321103354,
+      "beats_baseline": true,
+      "per_station": {
+        "HY_NGVL_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 26.333770240211116,
+            "mae": 20.316046533493626,
+            "r2": 0.12646953158070307
+          },
+          "xgboost": {
+            "rmse": 23.44838606329831,
+            "mae": 19.280890303812747,
+            "r2": 0.30740733903999995
+          }
+        },
+        "TB_TRTT_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 24.71236474660392,
+            "mae": 18.896193776697498,
+            "r2": 0.05009462527895803
+          },
+          "xgboost": {
+            "rmse": 19.56513964500882,
+            "mae": 16.217497432950584,
+            "r2": 0.4045879246061028
+          }
+        }
+      }
+    },
+    "lightgbm": {
+      "best_iteration": 99,
+      "val": {
+        "rmse": 26.246995302934653,
+        "mae": 19.47903638464989,
+        "r2": 0.1799066280534911
+      },
+      "test": {
+        "rmse": 21.30984875670563,
+        "mae": 17.234606498104885,
+        "r2": 0.39181926728838623
+      },
+      "rmse_improvement_pct": 16.54958047970478,
+      "beats_baseline": true,
+      "per_station": {
+        "HY_NGVL_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 26.333770240211116,
+            "mae": 20.316046533493626,
+            "r2": 0.12646953158070307
+          },
+          "lightgbm": {
+            "rmse": 23.251464149320668,
+            "mae": 18.86624061332114,
+            "r2": 0.31899141800499986
+          }
+        },
+        "TB_TRTT_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 24.71236474660392,
+            "mae": 18.896193776697498,
+            "r2": 0.05009462527895803
+          },
+          "lightgbm": {
+            "rmse": 19.17260344815468,
+            "mae": 15.60297238288863,
+            "r2": 0.4282398096356722
+          }
+        }
+      }
+    }
+  }
+}

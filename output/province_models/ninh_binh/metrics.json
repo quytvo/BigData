@@ -1,0 +1,219 @@
+{
+  "province": "Ninh Bình",
+  "slug": "ninh_binh",
+  "n_rows_province": 2880,
+  "stations": [
+    "HNa_CVNC_KHIKXQ"
+  ],
+  "horizon_hours": 24,
+  "n_train": 1982,
+  "n_val": 283,
+  "n_test": 567,
+  "split_ratio": {
+    "train": 0.7,
+    "val": 0.1,
+    "test": 0.2
+  },
+  "train_end": "2026-08-24 13:00:00",
+  "val_end": "2026-09-05 08:00:00",
+  "models": [
+    "linear_regression",
+    "svr",
+    "random_forest",
+    "xgboost",
+    "lightgbm"
+  ],
+  "features": [
+    "pm25_lag0",
+    "pm25_lag1",
+    "pm25_lag3",
+    "pm25_lag6",
+    "pm25_lag12",
+    "pm25_lag24",
+    "pm25_roll6",
+    "pm25_roll24",
+    "temperature_2m",
+    "relative_humidity_2m",
+    "dew_point_2m",
+    "surface_pressure",
+    "precipitation",
+    "wind_speed_10m",
+    "wind_direction_10m",
+    "boundary_layer_height",
+    "wind_dir_sin",
+    "wind_dir_cos",
+    "dew_point_deficit",
+    "ventilation_coef",
+    "temp_diff_24h",
+    "pressure_diff_24h",
+    "pblh_diff_24h",
+    "precip_sum_24h",
+    "hour",
+    "day_of_week",
+    "is_weekend"
+  ],
+  "baseline": {
+    "val": {
+      "rmse": 24.218038270810613,
+      "mae": 18.717071202246224,
+      "r2": 0.10582145202646653
+    },
+    "test": {
+      "rmse": 22.14569645331295,
+      "mae": 16.890613438082443,
+      "r2": 0.2635772054848531
+    }
+  },
+  "results": {
+    "linear_regression": {
+      "best_iteration": null,
+      "val": {
+        "rmse": 21.588325964282543,
+        "mae": 17.136622104216,
+        "r2": 0.2894669918627165
+      },
+      "test": {
+        "rmse": 19.694762955275515,
+        "mae": 15.678030456841395,
+        "r2": 0.41756152888826303
+      },
+      "rmse_improvement_pct": 11.067312799145595,
+      "beats_baseline": true,
+      "per_station": {
+        "HNa_CVNC_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 22.14569645331295,
+            "mae": 16.890613438082443,
+            "r2": 0.2635772054848531
+          },
+          "linear_regression": {
+            "rmse": 19.694762955275515,
+            "mae": 15.678030456841395,
+            "r2": 0.41756152888826303
+          }
+        }
+      }
+    },
+    "svr": {
+      "best_iteration": null,
+      "val": {
+        "rmse": 24.456684667108963,
+        "mae": 18.664857370417145,
+        "r2": 0.08811201754211895
+      },
+      "test": {
+        "rmse": 22.42848640223655,
+        "mae": 17.43854472451117,
+        "r2": 0.24464959033836153
+      },
+      "rmse_improvement_pct": -1.2769521587174808,
+      "beats_baseline": false,
+      "per_station": {
+        "HNa_CVNC_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 22.14569645331295,
+            "mae": 16.890613438082443,
+            "r2": 0.2635772054848531
+          },
+          "svr": {
+            "rmse": 22.42848640223655,
+            "mae": 17.43854472451117,
+            "r2": 0.24464959033836153
+          }
+        }
+      }
+    },
+    "random_forest": {
+      "best_iteration": null,
+      "val": {
+        "rmse": 20.57983286698078,
+        "mae": 16.135005684951334,
+        "r2": 0.3543011525907329
+      },
+      "test": {
+        "rmse": 20.36954171193162,
+        "mae": 16.569796148042766,
+        "r2": 0.3769669959869072
+      },
+      "rmse_improvement_pct": 8.02031557294113,
+      "beats_baseline": true,
+      "per_station": {
+        "HNa_CVNC_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 22.14569645331295,
+            "mae": 16.890613438082443,
+            "r2": 0.2635772054848531
+          },
+          "random_forest": {
+            "rmse": 20.36954171193162,
+            "mae": 16.569796148042766,
+            "r2": 0.3769669959869072
+          }
+        }
+      }
+    },
+    "xgboost": {
+      "best_iteration": 96,
+      "val": {
+        "rmse": 20.496384744650925,
+        "mae": 16.316948430652893,
+        "r2": 0.35952695926612854
+      },
+      "test": {
+        "rmse": 19.937048504664865,
+        "mae": 16.147259496969493,
+        "r2": 0.40314303251204564
+      },
+      "rmse_improvement_pct": 9.973260282440457,
+      "beats_baseline": true,
+      "per_station": {
+        "HNa_CVNC_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 22.14569645331295,
+            "mae": 16.890613438082443,
+            "r2": 0.2635772054848531
+          },
+          "xgboost": {
+            "rmse": 19.937048504664865,
+            "mae": 16.147259496969493,
+            "r2": 0.40314303251204564
+          }
+        }
+      }
+    },
+    "lightgbm": {
+      "best_iteration": 108,
+      "val": {
+        "rmse": 20.069299019867636,
+        "mae": 15.652341663671873,
+        "r2": 0.3859401082195476
+      },
+      "test": {
+        "rmse": 19.523000239908118,
+        "mae": 15.819196263290223,
+        "r2": 0.4276763976929725
+      },
+      "rmse_improvement_pct": 11.842915931472017,
+      "beats_baseline": true,
+      "per_station": {
+        "HNa_CVNC_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 22.14569645331295,
+            "mae": 16.890613438082443,
+            "r2": 0.2635772054848531
+          },
+          "lightgbm": {
+            "rmse": 19.523000239908118,
+            "mae": 15.819196263290223,
+            "r2": 0.4276763976929725
+          }
+        }
+      }
+    }
+  }
+}

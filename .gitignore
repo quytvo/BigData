@@ -1,3 +1,7 @@
 .agent/
 team_member/
-phase_progress/
+.env
+previous_projects/
+
+__pycache__/
+*.pyc

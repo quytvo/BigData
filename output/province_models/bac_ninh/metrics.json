@@ -1,0 +1,219 @@
+{
+  "province": "Bắc Ninh",
+  "slug": "bac_ninh",
+  "n_rows_province": 2880,
+  "stations": [
+    "BG_XUGI_KHIKXQ"
+  ],
+  "horizon_hours": 24,
+  "n_train": 1982,
+  "n_val": 283,
+  "n_test": 567,
+  "split_ratio": {
+    "train": 0.7,
+    "val": 0.1,
+    "test": 0.2
+  },
+  "train_end": "2026-08-24 13:00:00",
+  "val_end": "2026-09-05 08:00:00",
+  "models": [
+    "linear_regression",
+    "svr",
+    "random_forest",
+    "xgboost",
+    "lightgbm"
+  ],
+  "features": [
+    "pm25_lag0",
+    "pm25_lag1",
+    "pm25_lag3",
+    "pm25_lag6",
+    "pm25_lag12",
+    "pm25_lag24",
+    "pm25_roll6",
+    "pm25_roll24",
+    "temperature_2m",
+    "relative_humidity_2m",
+    "dew_point_2m",
+    "surface_pressure",
+    "precipitation",
+    "wind_speed_10m",
+    "wind_direction_10m",
+    "boundary_layer_height",
+    "wind_dir_sin",
+    "wind_dir_cos",
+    "dew_point_deficit",
+    "ventilation_coef",
+    "temp_diff_24h",
+    "pressure_diff_24h",
+    "pblh_diff_24h",
+    "precip_sum_24h",
+    "hour",
+    "day_of_week",
+    "is_weekend"
+  ],
+  "baseline": {
+    "val": {
+      "rmse": 27.8084515804101,
+      "mae": 20.936989539966866,
+      "r2": -0.5280327722342915
+    },
+    "test": {
+      "rmse": 24.731871091962383,
+      "mae": 20.06208494692942,
+      "r2": 0.19175919562703092
+    }
+  },
+  "results": {
+    "linear_regression": {
+      "best_iteration": null,
+      "val": {
+        "rmse": 21.962825104759975,
+        "mae": 16.30460774682637,
+        "r2": 0.04686271090644023
+      },
+      "test": {
+        "rmse": 23.746958136995282,
+        "mae": 19.34766790156488,
+        "r2": 0.2548515591219911
+      },
+      "rmse_improvement_pct": 3.982363288668392,
+      "beats_baseline": true,
+      "per_station": {
+        "BG_XUGI_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 24.731871091962383,
+            "mae": 20.06208494692942,
+            "r2": 0.19175919562703092
+          },
+          "linear_regression": {
+            "rmse": 23.746958136995282,
+            "mae": 19.34766790156488,
+            "r2": 0.2548515591219911
+          }
+        }
+      }
+    },
+    "svr": {
+      "best_iteration": null,
+      "val": {
+        "rmse": 22.589464334716006,
+        "mae": 16.585486902402646,
+        "r2": -0.008302674967963775
+      },
+      "test": {
+        "rmse": 24.697614241070326,
+        "mae": 19.97068988145346,
+        "r2": 0.1939966817460529
+      },
+      "rmse_improvement_pct": 0.1385129768980139,
+      "beats_baseline": true,
+      "per_station": {
+        "BG_XUGI_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 24.731871091962383,
+            "mae": 20.06208494692942,
+            "r2": 0.19175919562703092
+          },
+          "svr": {
+            "rmse": 24.697614241070326,
+            "mae": 19.97068988145346,
+            "r2": 0.1939966817460529
+          }
+        }
+      }
+    },
+    "random_forest": {
+      "best_iteration": null,
+      "val": {
+        "rmse": 28.902626153837765,
+        "mae": 21.981926129321284,
+        "r2": -0.6506449406889201
+      },
+      "test": {
+        "rmse": 36.87613150374487,
+        "mae": 29.84124441931224,
+        "r2": -0.7968736244007897
+      },
+      "rmse_improvement_pct": -49.103686359295544,
+      "beats_baseline": false,
+      "per_station": {
+        "BG_XUGI_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 24.731871091962383,
+            "mae": 20.06208494692942,
+            "r2": 0.19175919562703092
+          },
+          "random_forest": {
+            "rmse": 36.87613150374487,
+            "mae": 29.84124441931224,
+            "r2": -0.7968736244007897
+          }
+        }
+      }
+    },
+    "xgboost": {
+      "best_iteration": 2,
+      "val": {
+        "rmse": 22.568846797562635,
+        "mae": 17.339935735023523,
+        "r2": -0.006462947335428515
+      },
+      "test": {
+        "rmse": 28.9469247265688,
+        "mae": 22.0321202594887,
+        "r2": -0.10721430304376622
+      },
+      "rmse_improvement_pct": -17.043003414231233,
+      "beats_baseline": false,
+      "per_station": {
+        "BG_XUGI_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 24.731871091962383,
+            "mae": 20.06208494692942,
+            "r2": 0.19175919562703092
+          },
+          "xgboost": {
+            "rmse": 28.9469247265688,
+            "mae": 22.0321202594887,
+            "r2": -0.10721430304376622
+          }
+        }
+      }
+    },
+    "lightgbm": {
+      "best_iteration": 7,
+      "val": {
+        "rmse": 22.311496998639463,
+        "mae": 16.8437381397768,
+        "r2": 0.01635933440925552
+      },
+      "test": {
+        "rmse": 25.982796859286427,
+        "mae": 20.755770728246368,
+        "r2": 0.10793064669294061
+      },
+      "rmse_improvement_pct": -5.057950377764113,
+      "beats_baseline": false,
+      "per_station": {
+        "BG_XUGI_KHIKXQ": {
+          "n_test": 567,
+          "baseline": {
+            "rmse": 24.731871091962383,
+            "mae": 20.06208494692942,
+            "r2": 0.19175919562703092
+          },
+          "lightgbm": {
+            "rmse": 25.982796859286427,
+            "mae": 20.755770728246368,
+            "r2": 0.10793064669294061
+          }
+        }
+      }
+    }
+  }
+}
