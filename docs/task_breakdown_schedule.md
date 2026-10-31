@@ -47,7 +47,7 @@
 | **T1.2** | Crawl dữ liệu CEM/TEDP 4 tháng (01/06 - 30/09/2026), thu thập 66.703 dòng từ 28 trạm | **Quý** | T1.1 | P0 | 28/10/2026 | Đã xong | `lakehouse_storage/bronze/tedp_aqi_pm25_hourly.csv` |
 | **T1.3** | Xây dựng và chạy pipeline kiểm toán 8 bước, lọc ngưỡng QCVN, gắn cờ imputed | **Quý** | T1.2 | P0 | 29/10/2026 | Đã xong | `code/crawl_data/preprocess_tedp.py`, `lakehouse_storage/bronze/cleaned_tedp.csv` |
 | **T1.4** | Đồng bộ lưới thời gian 120 ngày (2.880 giờ/trạm), chốt 9 tỉnh / 15 trạm (43.200 dòng) | **Quý** | T1.3 | P0 | 29/10/2026 | Đã xong | `code/crawl_data/sync_tedp_120days.py`, `data_test/cleaned_tedp_synced_120d.csv` |
-| **T1.5** | Thu thập đủ 8 biến thời tiết và độ cao tầng biên từ Open-Meteo tại tọa độ 15 trạm | **Quý** | T1.4 | P0 | 29/10/2026 | Đã xong | `code/crawl_data/fetch_openmeteo_weather.py`, `data_test/weather_openmeteo_station_120d.csv` |
+| **T1.5** | Thu thập đủ 8 biến thời tiết và độ cao tầng biên từ Open-Meteo tại tọa độ 15 trạm | **Quý** | T1.4 | P0 | 29/10/2026 | Đã xong | `code/crawl_data/fetch_openmeteo_weather.py`, `data_test/openmeteo_weather_120d.csv` |
 
 ### PHASE 2: Kỹ thuật Đặc trưng Khí quyển và Huấn luyện Đa mô hình 9 Tỉnh (29/10/2026 - 31/10/2026)
 
@@ -57,7 +57,7 @@
 | **T2.2** | Thiết lập Early Stopping (30 vòng) và Regularization công bằng cho XGBoost và LightGBM | **Bảo** | T2.1 | P0 | 29/10/2026 | Đã xong | `code/training/common.py` |
 | **T2.3** | Viết script huấn luyện 9 tỉnh và chạy thực nghiệm đối sánh 5 mô hình ML với Baseline | **Bảo** | T2.2 | P0 | 29/10/2026 | Đã xong | `code/training/run_all.py`, `output/province_models/` |
 | **T2.4** | Kiểm định kết quả thực nghiệm (8/9 tỉnh vượt Baseline) và phân tích Feature Importance | **Hiếu** | T2.3 | P0 | 30/10/2026 | Đã xong | Các file `metrics.json`, `feature_importance.csv` |
-| **T2.5** | Chốt Phương án B (Local + CloudSim + UI) và đồng bộ toàn bộ tài liệu kiến trúc | **Dương** | T2.4 | P0 | 31/10/2026 | Đã xong | `project_context.md`, `master_plan.md`, `project_overview.md` |
+| **T2.5** | Chốt Phương án B (Local + CloudSim + UI) và đồng bộ toàn bộ tài liệu kiến trúc | **Dương** | T2.4 | P0 | 31/10/2026 | Đã xong | `README.md`, `docs/project_overview.md`, `docs/task_breakdown_schedule.md` |
 
 ---
 
@@ -74,80 +74,34 @@
 | **T4.2** | Xây dựng và chạy mô phỏng đa cấu hình máy ảo trên CloudSim (Config 1, 2, 3) | **Hiếu** | T3.2, T4.1 | P0 | **06/11/2026** | Cần làm | `code/simulation/run_cloudsim_benchmark.py`, `cloudsim_results.csv` |
 | **T4.3** | Phân tích chi phí đám mây mô phỏng và đánh đổi kiến trúc (CLO5) | **Dương** | T4.2 | P0 | **07/11/2026** | Cần làm | Bảng phân tích chi phí Mục 4, 5, 6 cho Báo cáo |
 
-#### Mô tả chi tiết từng Task trong Tuần 1:
+#### Mô tả công việc từng Task trong Tuần 1:
 
-#### Task T3.1: Xây dựng Local Medallion Parquet Lakehouse và ghép tọa độ trạm tầng Gold
-- **Người phụ trách:** Quý | **Hạn hoàn thành:** 02/11/2026 | **Độ ưu tiên:** P0
-- **Mục tiêu:** Hoàn thiện kiến trúc lưu trữ 3 tầng (Bronze - Silver - Gold) dưới định dạng Apache Parquet phân vùng theo tỉnh, phục vụ tối ưu hóa I/O và cung cấp dữ liệu cho UI bản đồ.
-- **Nội dung mô tả công việc:**
-  1. Xây dựng script `code/lakehouse/build_lakehouse.py` tự động hóa quy trình đóng gói dữ liệu vào `lakehouse_storage/`.
-  2. Tầng Bronze: Lưu trữ nguyên trạng các file dữ liệu thô ban đầu và báo cáo kiểm toán tại `lakehouse_storage/bronze/`.
-  3. Tầng Silver: Đọc dữ liệu sạch 120 ngày từ `data_test/`, chuyển đổi sang định dạng cột Apache Parquet (nén Snappy) và phân vùng thư mục vật lý theo từng tỉnh (`province=<slug>/`).
-  4. Tầng Gold: Kết hợp tọa độ địa lý GPS (`latitude`, `longitude`, `elevation`, `region`) từ bảng trạm với kết quả dự báo 24h của cả 5 mô hình ML trên 9 tỉnh để xuất thành bảng `lakehouse_storage/gold/spatial_forecasts.parquet`.
-  5. Xuất bảng tổng hợp metrics (`RMSE`, `MAE`, `R2`, thời gian huấn luyện) thành `lakehouse_storage/gold/model_metrics.parquet`.
-- **Đầu vào (Input):** `lakehouse_storage/bronze/`, `data_test/*.csv`, `output/province_models/`
-- **Đầu ra (Output):** `code/lakehouse/build_lakehouse.py`, `lakehouse_storage/silver/`, `lakehouse_storage/gold/`
-- **Tiêu chí nghiệm thu (DoD):** Chạy `python code/lakehouse/build_lakehouse.py` không phát sinh lỗi; thư mục `lakehouse_storage/` có đầy đủ 3 tầng Bronze/Silver/Gold; bảng Gold chứa đủ 15 trạm với tọa độ và chuỗi dự báo.
+- **T3.1 — Xây dựng Local Medallion Parquet Lakehouse và ghép tọa độ trạm tầng Gold (Quý):**
+  - Viết script `code/lakehouse/build_lakehouse.py` chuyển đổi 2 tập dữ liệu sạch 120 ngày trong `data_test/` (`cleaned_tedp_synced_120d.csv` và `openmeteo_weather_120d.csv`) sang định dạng cột Apache Parquet (nén Snappy), lưu phân vùng theo từng tỉnh tại `lakehouse_storage/silver/tedp/province=<slug>/` và `lakehouse_storage/silver/weather/province=<slug>/`.
+  - Trích xuất tọa độ địa lý (`latitude`, `longitude`, `elevation`, `region`) của 15 trạm từ dữ liệu Silver, ghép nối (join) với kết quả dự báo `predictions.csv` và `metrics.json` của 9 tỉnh trong `output/province_models/` để tạo ra 2 bảng tổng hợp tại tầng Gold: `lakehouse_storage/gold/spatial_forecasts.parquet` (phục vụ vẽ bản đồ dự báo) và `lakehouse_storage/gold/model_metrics.parquet` (phục vụ bảng xếp hạng mô hình).
 
-#### Task T3.2: Thực nghiệm đo kiểm hiệu năng lưu trữ CSV vs Partitioned Parquet
-- **Người phụ trách:** Quý | **Hạn hoàn thành:** 03/11/2026 | **Độ ưu tiên:** P0
-- **Mục tiêu:** Cung cấp bằng chứng thực nghiệm định lượng về sự vượt trội của định dạng Parquet phân vùng so với CSV truyền thống để đưa vào Báo cáo (Mục 5 - Storage Selection).
-- **Nội dung mô tả công việc:**
-  1. Viết hàm đo đạc 4 chỉ số kỹ thuật: Dung lượng chiếm dụng trên đĩa (Disk Size - MB), Tỷ lệ nén (Compression Ratio - %), Lượng dữ liệu quét thực tế (Bytes Scanned khi truy vấn 1 tỉnh), và Thời gian đọc I/O (Read Latency - ms).
-  2. Thực hiện đo kiểm đối đầu trực tiếp giữa file CSV nguyên khối và Partitioned Parquet trên 3 cấp độ quy mô:
-     - Mức 1x: 43.200 dòng dữ liệu thực tế 120 ngày.
-     - Mức 10x: 432.000 dòng (mô phỏng mạng lưới 150 trạm trong 1 năm).
-     - Mức 50x: 2.160.000 dòng (mô phỏng mở rộng quy mô lớn).
-  3. Tổng hợp bảng số liệu so sánh và xuất ra file CSV, JSON.
-- **Đầu vào (Input):** `data_test/*.csv`, `lakehouse_storage/silver/`
-- **Đầu ra (Output):** `output/cloudsim_benchmark/storage_benchmark.csv` và `storage_benchmark.json`
-- **Tiêu chí nghiệm thu (DoD):** Có bảng số liệu thực nghiệm đầy đủ cả 4 chỉ số trên 3 mức quy mô; chứng minh được Parquet giảm ít nhất 70% dung lượng và giảm trên 80% lượng dữ liệu quét khi truy vấn theo tỉnh.
+- **T3.2 — Thực nghiệm đo kiểm hiệu năng lưu trữ CSV vs Partitioned Parquet (Quý):**
+  - Viết hàm benchmark đo 4 chỉ số thực nghiệm giữa định dạng CSV nguyên khối (`data_test/`) và Parquet phân vùng theo tỉnh (`lakehouse_storage/silver/`): Dung lượng lưu trữ trên đĩa (MB), Tỷ lệ nén (%), Lượng dữ liệu phải quét khi truy vấn 1 tỉnh (Bytes Scanned), và Thời gian đọc I/O (ms).
+  - Thực hiện phép đo trên 3 mức quy mô dữ liệu bằng cách nhân bản tập dữ liệu trong bộ nhớ tạm (không đẩy file giả lập kích thước lớn lên Git): mức `1x` (43.200 dòng thực tế), mức `10x` (432.000 dòng) và mức `50x` (2.160.000 dòng).
+  - Xuất kết quả đối sánh ra `output/cloudsim_benchmark/storage_benchmark.csv` làm minh chứng định lượng cho Mục 5 (Storage Selection) của Báo cáo.
 
-#### Task T4.1: Đo kiểm thời gian CPU thực tế 9 tỉnh và quy đổi khối lượng lệnh Cloudlet (MI)
-- **Người phụ trách:** Bảo | **Hạn hoàn thành:** 04/11/2026 | **Độ ưu tiên:** P0
-- **Mục tiêu:** Đo lường chính xác hồ sơ khối lượng tính toán thực tế (Workload Profile) của từng tỉnh để cung cấp tham số đầu vào trung thực cho bộ mô phỏng CloudSim.
-- **Nội dung mô tả công việc:**
-  1. Bổ sung module đo thời gian CPU thực tế (`execution_time_sec`) trong quá trình xử lý đặc trưng và huấn luyện mô hình cho từng tỉnh trong 9 tỉnh.
-  2. Ghi nhận số lượng mẫu dữ liệu (Sample Count), kích thước tập dữ liệu đầu vào và đầu ra của từng tỉnh.
-  3. Quy đổi thời gian thực thi cục bộ sang chiều dài tác vụ Cloudlet (đơn vị: MI - Million Instructions) theo năng lực CPU máy tính (MIPS Rating): `Cloudlet_MI = CPU_Time * MIPS_local`.
-  4. Phân tích sự chênh lệch khối lượng tính toán giữa tỉnh nhiều trạm (TP.HCM có 4 trạm, Hà Nội/Hưng Yên có 2 trạm) và tỉnh 1 trạm để làm căn cứ lập lịch cân bằng tải.
-- **Đầu vào (Input):** `code/training/run_all.py`, `output/province_models/`
-- **Đầu ra (Output):** `output/cloudsim_benchmark/workload_profile.csv`
-- **Tiêu chí nghiệm thu (DoD):** File CSV ghi nhận đầy đủ 9 dòng tương ứng 9 tỉnh với các thông số: số trạm, số dòng, thời gian CPU, dung lượng I/O, và Cloudlet MI.
+- **T4.1 — Đo kiểm thời gian CPU thực tế 9 tỉnh và quy đổi khối lượng lệnh Cloudlet (Bảo):**
+  - Đo thời gian xử lý đặc trưng và huấn luyện thực tế (`train_time_sec`) cùng kích thước dữ liệu đầu vào/đầu ra của từng tỉnh trong 9 tỉnh khi chạy pipeline huấn luyện.
+  - Ghi nhận sự chênh lệch khối lượng tính toán giữa các tỉnh có mật độ trạm khác nhau (TP.HCM có 4 trạm, Hà Nội và Hưng Yên có 2 trạm, 6 tỉnh còn lại có 1 trạm) và quy đổi thời gian CPU sang chiều dài tác vụ Cloudlet (`Cloudlet_MI = CPU_Time_Sec * MIPS_Local`).
+  - Xuất hồ sơ tải tính toán của 9 tỉnh ra file `output/cloudsim_benchmark/workload_profile.csv` để làm đầu vào cho bộ mô phỏng CloudSim.
 
-#### Task T4.2: Xây dựng và chạy mô phỏng đa cấu hình máy ảo trên CloudSim
-- **Người phụ trách:** Hiếu | **Hạn hoàn thành:** 06/11/2026 | **Độ ưu tiên:** P0
-- **Mục tiêu:** Hiện thực hóa yêu cầu Mục 4.2 của đề bài (Mô phỏng CloudSim với ít nhất 2 cấu hình tài nguyên khác nhau dựa trên đơn giá và hiệu năng thực tế).
-- **Nội dung mô tả công việc:**
-  1. Xây dựng script mô phỏng `code/simulation/run_cloudsim_benchmark.py` dựa trên mô hình tài nguyên CloudSim.
-  2. Thiết lập bảng thông số phần cứng tham chiếu Google Cloud Platform (Region `asia-southeast1` - Singapore):
-     - `e2-standard-2`: 2 vCPUs, 8 GB RAM, giá $0.0736/giờ ($0.0000204/giây).
-     - `e2-standard-4`: 4 vCPUs, 16 GB RAM, giá $0.1472/giờ ($0.0000409/giây).
-     - `c2-standard-8`: 8 vCPUs, 32 GB RAM, giá $0.4578/giờ ($0.0001272/giây).
-  3. Mô phỏng thực thi 9 tác vụ tỉnh trên 3 cấu hình hạ tầng:
-     - Cấu hình 1 (Single VM): 1 máy ảo nhỏ `e2-standard-2` chạy tuần tự 9 tỉnh, đọc dữ liệu CSV nguyên khối.
-     - Cấu hình 2 (Balanced Regional Cluster): Cụm 3 máy ảo `e2-standard-4` chạy song song, phân bổ tác vụ theo thuật toán cân bằng tải LPT (Longest Processing Time First), đọc dữ liệu Parquet phân vùng.
-     - Cấu hình 3 (Max-Parallel Cluster): Cụm 9 máy ảo `c2-standard-8` chạy song song tối đa (mỗi tỉnh 1 VM).
-  4. Đưa vào công thức mô phỏng: Thời gian khởi động máy ảo (VM Boot Time ~30s), thời gian truyền dữ liệu qua mạng (Data Transfer Time = File Size / Bandwidth), và quy tắc tính phí tối thiểu 60 giây của GCP.
-  5. Chạy mô phỏng ở 3 mức quy mô (1x, 10x, 50x) và tính toán: Tổng thời gian hoàn thành (Makespan), Độ tăng tốc (Speedup), Hiệu suất sử dụng CPU, và Chi phí mô phỏng (Simulated Cost).
-- **Đầu vào (Input):** `workload_profile.csv`, `storage_benchmark.csv`
-- **Đầu ra (Output):** `code/simulation/run_cloudsim_benchmark.py`, `output/cloudsim_benchmark/cloudsim_results.csv`, `cloudsim_summary.json`
-- **Tiêu chí nghiệm thu (DoD):** Script chạy độc lập thành công; xuất ra kết quả định lượng rõ ràng cho cả 3 cấu hình ở 3 mức quy mô; phản ánh đúng quy luật Amdahl (Cấu hình 3 nhanh nhất nhưng chi phí tăng vọt do thời gian chờ và quy tắc 60 giây).
+- **T4.2 — Xây dựng và chạy mô phỏng đa cấu hình máy ảo trên CloudSim (Hiếu):**
+  - Xây dựng script `code/simulation/run_cloudsim_benchmark.py` đọc trực tiếp thông số từ `workload_profile.csv` (của Bảo) và `storage_benchmark.csv` (của Quý).
+  - Thiết lập thông số 3 dòng máy ảo tham chiếu theo đơn giá thực tế của Google Cloud Platform (khu vực Singapore `asia-southeast1`): `e2-standard-2` (2 vCPU, 8 GB RAM, 0,0736 USD/giờ), `e2-standard-4` (4 vCPU, 16 GB RAM, 0,1472 USD/giờ) và `c2-standard-8` (8 vCPU, 32 GB RAM, 0,4578 USD/giờ).
+  - Mô phỏng thực thi 9 tác vụ tỉnh trên 3 cấu hình hạ tầng ở các quy mô `1x`, `10x`, `50x` (có tính thời gian khởi động VM 30 giây, thời gian truyền mạng và quy tắc tính phí tối thiểu 60 giây của GCP):
+    1. *Config 1 (Single VM):* 1 máy `e2-standard-2` chạy tuần tự 9 tỉnh, đọc dữ liệu CSV nguyên khối.
+    2. *Config 2 (Balanced Cluster):* 3 máy `e2-standard-4` chạy song song, chia tải 9 tỉnh theo thuật toán LPT (tỉnh nặng chạy trước) và đọc dữ liệu Parquet phân vùng.
+    3. *Config 3 (Max-Parallel Cluster):* 9 máy `c2-standard-8` chạy song song tối đa (mỗi tỉnh 1 máy ảo riêng).
+  - Xuất kết quả thời gian hoàn thành (Makespan), độ tăng tốc (Speedup), hiệu suất CPU và chi phí mô phỏng ra `output/cloudsim_benchmark/cloudsim_results.csv`.
 
-#### Task T4.3: Phân tích chi phí đám mây mô phỏng và đánh đổi kiến trúc (CLO5)
-- **Người phụ trách:** Dương | **Hạn hoàn thành:** 07/11/2026 | **Độ ưu tiên:** P0
-- **Mục tiêu:** Hoàn thiện toàn bộ lập luận toán học và bảng biểu so sánh chi phí để chuẩn bị nội dung cho Báo cáo kỹ thuật (CLO5 - chiếm 20% tổng điểm).
-- **Nội dung mô tả công việc:**
-  1. Tổng hợp kết quả từ T3.2 và T4.2 thành bảng phân tích chi phí đa chiều (Compute Cost + Storage Cost + Network I/O Cost).
-  2. Xây dựng mô hình chi phí lưu trữ phân tầng theo vòng đời dữ liệu trên Cloud Object Storage (GCS):
-     - Tầng Hot (Standard Storage - $0.020/GB/tháng): Dữ liệu Silver và Gold truy cập liên tục.
-     - Tầng Warm (Nearline Storage - $0.010/GB/tháng): Dữ liệu Bronze lưu trữ sau 30 ngày (tiết kiệm 50%).
-     - Tầng Cold (Archive Storage - $0.0025/GB/tháng): Dữ liệu lịch sử sau 90 ngày (tiết kiệm 87.5%).
-  3. Phân tích đánh đổi kỹ thuật (Technical Trade-offs): So sánh điểm tối ưu Chi phí / Hiệu năng giữa Cấu hình 1 (rẻ nhưng quá chậm), Cấu hình 2 (tối ưu nhất nhờ cân bằng tải + Parquet), và Cấu hình 3 (lãng phí tài nguyên do over-provisioning).
-  4. Soạn thảo tài liệu nháp chi tiết cho Mục 4 (Cost Estimation), Mục 5 (Storage Selection) và Mục 6 (Technical Trade-offs) của Báo cáo.
-- **Đầu vào (Input):** `cloudsim_results.csv`, `storage_benchmark.csv`
-- **Đầu ra (Output):** Bản thảo phân tích chi phí và bảng biểu (Word/Markdown) sẵn sàng ghép vào Báo cáo.
-- **Tiêu chí nghiệm thu (DoD):** Có đầy đủ công thức tính toán minh bạch, bảng đối chiếu 3 cấu hình rõ ràng, và lập luận thuyết phục bảo vệ giải pháp kiến trúc trước Hội đồng.
+- **T4.3 — Phân tích chi phí đám mây mô phỏng và đánh đổi kiến trúc CLO5 (Dương):**
+  - Tổng hợp số liệu từ `storage_benchmark.csv` và `cloudsim_results.csv` thành hệ thống bảng biểu so sánh chi phí toàn diện: Chi phí tính toán (Compute Cost), Chi phí truyền tải I/O và Chi phí lưu trữ phân tầng theo vòng đời dữ liệu trên Cloud Object Storage (tầng Hot Standard 0,020 USD/GB/tháng cho Silver/Gold, tầng Warm Nearline 0,010 USD/GB/tháng và tầng Cold Archive 0,0025 USD/GB/tháng cho Bronze).
+  - Phân tích bài toán đánh đổi Chi phí – Hiệu năng (Cost vs. Performance Trade-off) để chứng minh lý do chọn *Config 2 (3 VMs + Parquet)* làm cấu hình tối ưu nhất thay vì *Config 1* (quá chậm) hay *Config 3* (lãng phí tài nguyên do thời gian khởi động VM và quy tắc tính phí tối thiểu 60 giây).
 
 ---
 
@@ -162,85 +116,35 @@
 | **T6.1** | Viết Technical Report tiếng Anh — Phần 1 (Mục 1 đến Mục 5: Bài toán, Kiến trúc, Chi phí, Lưu trữ) | **Dương** | T3.2, T4.3 | P0 | **12/11/2026** | Cần làm | Bản thảo Sections 1-5 (4-5 trang tiếng Anh) |
 | **T6.2** | Viết Technical Report tiếng Anh — Phần 2 (Mục 6 đến Mục 9: Trade-offs, Thuật toán, Kết quả, Bài học) | **Bảo** | T2.4, T4.2, T6.1 | P0 | **14/11/2026** | Cần làm | Bản thảo Sections 6-9 (Ghép thành Full Draft 8-12 trang) |
 
-#### Mô tả chi tiết từng Task trong Tuần 2:
+#### Mô tả công việc từng Task trong Tuần 2:
 
-#### Task T5.1: Phát triển UI Bản đồ Dự báo Không gian (Phần 1: Bản đồ tọa độ VN_AQI và Chuỗi dự báo 24h)
-- **Người phụ trách:** Hiếu | **Hạn hoàn thành:** 10/11/2026 | **Độ ưu tiên:** P0
-- **Mục tiêu:** Xây dựng giao diện trực quan hóa tương tác hiển thị vị trí các trạm quan trắc trên bản đồ Việt Nam và biểu đồ dự báo phục vụ trực tiếp cho phần Demo bảo vệ đồ án.
-- **Nội dung mô tả công việc:**
-  1. Khởi tạo ứng dụng Dashboard bằng Streamlit và Plotly (`code/ui/app_dashboard.py`).
-  2. Đọc trực tiếp dữ liệu từ tầng Gold (`lakehouse_storage/gold/spatial_forecasts.parquet`).
-  3. Vẽ bản đồ Việt Nam định vị chính xác 15 trạm quan trắc thuộc 9 tỉnh theo cặp tọa độ GPS (`latitude`, `longitude`).
-  4. Gán màu sắc điểm trạm tự động theo 6 cấp cảnh báo của thang chuẩn VN_AQI (Tốt: Xanh lá, Trung bình: Vàng, Kém: Cam, Xấu: Đỏ, Rất xấu: Tím, Nguy hại: Nâu) tương ứng với giá trị dự báo 24 giờ tới.
-  5. Xây dựng bộ điều khiển tương tác (Sidebar filters): Cho phép người dùng chọn Tỉnh/Thành phố, chọn Trạm quan trắc, chọn mốc thời gian dự báo, và chọn thuật toán ML hiển thị (`Linear Regression`, `SVR`, `Random Forest`, `XGBoost`, `LightGBM`).
-  6. Vẽ biểu đồ chuỗi thời gian đối sánh tương tác (Time Series Chart): So sánh đường giá trị thực đo (`y_true`), giá trị cơ sở (`Baseline Persistence 24h`) và đường dự báo của các mô hình ML.
-- **Đầu vào (Input):** `lakehouse_storage/gold/spatial_forecasts.parquet`
-- **Đầu ra (Output):** `code/ui/app_dashboard.py` (Tab 1: Geo-Spatial Air Quality Map & Forecast)
-- **Tiêu chí nghiệm thu (DoD):** Chạy lệnh `streamlit run code/ui/app_dashboard.py` hiển thị bản đồ mượt mà, đổi màu trạm chính xác theo thang VN_AQI, biểu đồ zoom/pan tương tác tốt.
+- **T5.1 — Phát triển UI Bản đồ Dự báo Không gian - Phần 1 (Hiếu):**
+  - Xây dựng ứng dụng `code/ui/app_dashboard.py` bằng Streamlit và Plotly, đọc trực tiếp dữ liệu từ tầng Gold (`lakehouse_storage/gold/spatial_forecasts.parquet`).
+  - Thiết kế **Tab 1 (Bản đồ & Dự báo 24h)**: Hiển thị bản đồ Việt Nam với vị trí 15 trạm quan trắc thuộc 9 tỉnh theo tọa độ GPS (`latitude`, `longitude`), tự động tô màu điểm trạm theo 6 mức cảnh báo chuẩn VN_AQI (Xanh, Vàng, Cam, Đỏ, Tím, Nâu).
+  - Tạo bộ lọc tương tác cho phép chọn Tỉnh, Trạm quan trắc, Mô hình học máy (`Linear Regression`, `SVR`, `Random Forest`, `XGBoost`, `LightGBM`) để xem biểu đồ chuỗi thời gian đối sánh giữa giá trị thực đo (`y_true`), đường cơ sở (`Baseline Persistence 24h`) và đường dự báo.
 
-#### Task T5.2: Phát triển UI Bản đồ Dự báo Không gian (Phần 2: Tab Giải thích Vật lý và Tab CloudSim)
-- **Người phụ trách:** Hiếu | **Hạn hoàn thành:** 11/11/2026 | **Độ ưu tiên:** P0
-- **Mục tiêu:** Hoàn thiện 2 Tab nâng cao trên UI để chứng minh chiều sâu học thuật về Vật lý Khí quyển và kết quả Benchmark Hạ tầng Đám mây.
-- **Nội dung mô tả công việc:**
-  1. Xây dựng Tab 2 - Khám phá Học máy & Giải thích Vật lý (ML Benchmark & Feature Explainability):
-     - Bảng xếp hạng sai số dự báo (`RMSE`, `MAE`, `R2`, `% cải thiện so với Baseline`) của 9 tỉnh thành.
-     - Biểu đồ cột thể hiện mức độ quan trọng của đặc trưng (`Feature Importance` từ LightGBM/XGBoost): Làm nổi bật vai trò của các biến khí tượng mới bổ sung (tổng lượng mưa 24h `precip_sum_24h`, biến thiên áp suất 24h `pressure_diff_24h`, hướng gió `wind_dir_cos`, hệ số thông gió `ventilation_coef`).
-  2. Xây dựng Tab 3 - Đánh giá Hạ tầng & Chi phí CloudSim (CloudSim Infrastructure & Cost Dashboard):
-     - Biểu đồ so sánh dung lượng lưu trữ và thời gian đọc I/O giữa CSV và Parquet ở các mức quy mô (1x, 10x, 50x).
-     - Biểu đồ đối sánh Thời gian thực thi (Makespan) vs. Chi phí mô phỏng (Cost $) giữa 3 cấu hình máy ảo đám mây (Config 1, 2, 3).
-  3. Tinh chỉnh giao diện: Chuẩn hóa font chữ tiếng Việt, bố cục responsive, hiển thị KPI metrics tóm tắt ở đầu trang.
-- **Đầu vào (Input):** `output/province_models/`, `output/cloudsim_benchmark/`
-- **Đầu ra (Output):** `code/ui/app_dashboard.py` hoàn chỉnh đầy đủ 3 Tabs
-- **Tiêu chí nghiệm thu (DoD):** Giao diện chạy ổn định 100% offline; chuyển đổi giữa 3 Tabs tức thì; hiển thị đầy đủ cả kết quả AI lẫn kết quả Hạ tầng Big Data.
+- **T5.2 — Phát triển UI Bản đồ Dự báo Không gian - Phần 2 (Hiếu):**
+  - Thiết kế **Tab 2 (Đối sánh Học máy & Giải thích Vật lý)**: Hiển thị bảng xếp hạng sai số dự báo (`RMSE`, `MAE`, `R2`, `% cải thiện so với Baseline`) của 9 tỉnh và biểu đồ mức độ quan trọng của các biến khí tượng (`Feature Importance` từ LightGBM/XGBoost như tổng lượng mưa 24h, biến thiên áp suất 24h, hướng gió, hệ số thông gió).
+  - Thiết kế **Tab 3 (Hạ tầng Lakehouse & Mô phỏng CloudSim)**: Trực quan hóa kết quả từ `output/cloudsim_benchmark/` bằng biểu đồ so sánh dung lượng nén/tốc độ đọc giữa CSV và Parquet, cùng biểu đồ đối sánh Thời gian thực thi (Makespan) và Chi phí đám mây giữa 3 cấu hình máy ảo (Config 1, 2, 3).
 
-#### Task T5.3: Kiểm thử tích hợp End-to-End và viết tài liệu hướng dẫn triển khai
-- **Người phụ trách:** Quý | **Hạn hoàn thành:** 12/11/2026 | **Độ ưu tiên:** P0
-- **Mục tiêu:** Bảo đảm toàn bộ hệ thống có thể tái lập hoàn toàn từ đầu (Reproducibility) và cung cấp tài liệu hướng dẫn triển khai theo yêu cầu bắt buộc của đề bài.
-- **Nội dung mô tả công việc:**
-  1. Thực hiện kiểm thử tích hợp toàn bộ luồng từ đầu đến cuối trên một môi trường sạch:
-     `Crawl/Sync dữ liệu -> Build Parquet Lakehouse -> Train/Eval mô hình -> Run CloudSim Benchmark -> Launch UI Dashboard`.
-  2. Ghi nhận thời gian thực thi, kiểm tra tính toàn vẹn của dữ liệu sau mỗi bước và khắc phục triệt để các lỗi đường dẫn tương đối.
-  3. Soạn thảo file `docs/deployment_notes.md`:
-     - Yêu cầu phần cứng và phần mềm (Python version, hệ điều hành).
-     - Hướng dẫn cài đặt môi trường ảo và thư viện (`requirements.txt`).
-     - Danh sách các câu lệnh thực thi từng bước (Step-by-step CLI commands).
-     - Hướng dẫn khởi chạy và sử dụng UI Dashboard.
-     - Hướng dẫn xử lý các sự cố thường gặp (Troubleshooting guide).
-- **Đầu vào (Input):** Toàn bộ mã nguồn trong `code/`, dữ liệu trong `lakehouse_storage/`
-- **Đầu ra (Output):** `docs/deployment_notes.md` hoàn chỉnh
-- **Tiêu chí nghiệm thu (DoD):** Một thành viên khác trong nhóm có thể làm theo đúng từng bước trong `deployment_notes.md` trên máy cá nhân và chạy thành công toàn bộ hệ thống mà không cần người khác trợ giúp.
+- **T5.3 — Kiểm thử tích hợp End-to-End và viết tài liệu hướng dẫn triển khai (Quý):**
+  - Chạy kiểm thử toàn bộ luồng dữ liệu từ đầu đến cuối (`Build Parquet Lakehouse -> Run CloudSim Benchmark -> Launch UI Dashboard`) để đảm bảo mọi đường dẫn tương đối hoạt động chính xác và tái lập được trên máy của các thành viên khác.
+  - Soạn thảo tài liệu `docs/deployment_notes.md` (yêu cầu bắt buộc trong danh mục nộp bài): hướng dẫn cài đặt môi trường Python, danh sách thư viện `requirements.txt`, thứ tự câu lệnh CLI chạy từng phân hệ, và cách mở giao diện UI Dashboard.
 
-#### Task T6.1: Viết Technical Report tiếng Anh — Phần 1 (Mục 1 đến Mục 5)
-- **Người phụ trách:** Dương | **Hạn hoàn thành:** 12/11/2026 | **Độ ưu tiên:** P0
-- **Mục tiêu:** Hoàn thành nửa đầu của Báo cáo kỹ thuật bằng tiếng Anh học thuật chuẩn mực (độ dài khoảng 4–5 trang) theo đúng cấu trúc yêu cầu của đề bài.
-- **Nội dung mô tả công việc:**
-  1. Section 1 - Problem Definition: Trình bày bối cảnh ô nhiễm bụi mịn PM2.5 tại Việt Nam, phân tích 3 rào cản kỹ thuật của hệ thống quan trắc hiện tại, và xác định mục tiêu bài toán dự báo xa trước 24 giờ.
-  2. Section 2 - System / Big Data Architecture: Trình bày kiến trúc tổng thể End-to-End, sơ đồ luồng dữ liệu 4 tầng (Ingestion -> Lakehouse Storage -> Parallel ML -> Serving/CloudSim), và chứng minh tính thỏa mãn 5 chữ V của Big Data.
-  3. Section 3 - Service & Resource Selection: Thuyết minh việc lựa chọn Phương án B (Local Medallion Lakehouse + CloudSim), mô tả đặc tính kỹ thuật của 3 cấu hình máy ảo đám mây tham chiếu (`e2-standard-2`, `e2-standard-4`, `c2-standard-8`).
-  4. Section 4 - Cost Estimation: Trình bày công thức toán học tính toán chi phí thực thi đám mây, đưa vào bảng số liệu chi phí mô phỏng từ kết quả CloudSim, và phân tích chi phí lưu trữ phân tầng theo vòng đời dữ liệu (Hot/Warm/Cold).
-  5. Section 5 - Storage Selection: Trình bày lý do lựa chọn định dạng Apache Parquet phân vùng theo tỉnh (`province=...`) thay vì CSV/JSON, đưa vào bảng số liệu thực nghiệm đo kiểm T3.2 (tiết kiệm dung lượng và tăng tốc I/O).
-- **Đầu vào (Input):** `docs/project_overview.md`, `storage_benchmark.csv`, `cloudsim_results.csv`, bảng phân tích chi phí T4.3
-- **Đầu ra (Output):** Bản thảo Sections 1–5 bằng tiếng Anh (file Word/Docs)
-- **Tiêu chí nghiệm thu (DoD):** Viết bằng tiếng Anh chuẩn, có sơ đồ kiến trúc rõ nét, bảng số liệu định lượng đầy đủ, không mắc lỗi chính tả hay định dạng.
+- **T6.1 — Viết Technical Report tiếng Anh - Phần 1 từ Mục 1 đến Mục 5 (Dương):**
+  - Viết 5 mục đầu tiên của báo cáo kỹ thuật bằng tiếng Anh học thuật (khoảng 4–5 trang):
+    - *Section 1 (Problem Definition):* Bối cảnh ô nhiễm bụi mịn tại Việt Nam và bài toán dự báo chỉ số PM2.5 trước 24 giờ.
+    - *Section 2 (System / Big Data Architecture):* Kiến trúc 4 tầng End-to-End và phân tích 5 chữ V của dữ liệu lớn.
+    - *Section 3 (Service & Resource Selection):* Lý giải lựa chọn kiến trúc Local Medallion Lakehouse kết hợp mô phỏng đa cấu hình máy ảo CloudSim.
+    - *Section 4 (Cost Estimation):* Mô hình toán học tính chi phí thực thi đám mây, chi phí lưu trữ phân tầng (Hot/Warm/Cold) và bảng kết quả mô phỏng từ T4.3.
+    - *Section 5 (Storage Selection):* Phân tích cấu trúc lưu trữ phân vùng Apache Parquet và bảng thực nghiệm hiệu năng I/O từ T3.2.
 
-#### Task T6.2: Viết Technical Report tiếng Anh — Phần 2 (Mục 6 đến Mục 9)
-- **Người phụ trách:** Bảo | **Hạn hoàn thành:** 14/11/2026 | **Độ ưu tiên:** P0
-- **Mục tiêu:** Hoàn thành nửa sau của Báo cáo kỹ thuật, ghép nối với Phần 1 để tạo thành Bản nháp hoàn chỉnh (Full Draft) đạt độ dài tiêu chuẩn 8–12 trang.
-- **Nội dung mô tả công việc:**
-  1. Section 6 - Technical Trade-offs: Phân tích sâu các đánh đổi kiến trúc:
-     - Mô hình cục bộ từng tỉnh (Local Per-province) vs. Mô hình toàn quốc (Global pooled model).
-     - Khả năng học tương tác phi tuyến của mô hình cây (`LightGBM`/`XGBoost`) vs. Khả năng ngoại suy bền vững của mô hình tuyến tính (`Linear Regression`) khi dịch chuyển phân phối giao mùa.
-     - Đánh đổi Chi phí vs. Thời gian giữa 3 cấu hình máy ảo CloudSim (chứng minh quy luật Amdahl).
-  2. Section 7 - Algorithms & Processing Methods: Mô tả quy trình kiểm toán dữ liệu 8 bước, kỹ thuật trích xuất 31 đặc trưng vật lý khí quyển ($PBLH, V_c, DPD, \sin/\cos\text{ wind}, \Delta_{24\text{h}}$), và cơ chế kiểm soát quá khớp công bằng (Early Stopping 30 rounds).
-  3. Section 8 - Experimental Results:
-     - Bảng quy đổi chuẩn hóa giữa thang đo chỉ số $I_{\text{PM2.5}}$ (VN_AQI) và nồng độ bụi $\mu\text{g/m}^3$.
-     - Bảng đối sánh chi tiết 5 mô hình ML trên toàn bộ 9 tỉnh thành (chứng minh 8/9 tỉnh vượt Baseline).
-     - Bảng kết quả thực nghiệm mô phỏng CloudSim ở 3 mức quy mô (1x, 10x, 50x).
-  4. Section 9 - Lessons Learned & Future Work: Phân tích 2 trường hợp đặc biệt (Bắc Ninh bị thiếu dữ liệu mùa thu và Tây Ninh bị lệch pha phương sai), bài toán lan truyền ô nhiễm liên tỉnh, và hướng mở rộng hệ thống.
-  5. Ghép nối Sections 1–5 (từ Dương) và Sections 6–9 thành một bản thảo thống nhất.
-- **Đầu vào (Input):** `output/province_models/`, `cloudsim_results.csv`, Sections 1–5 từ T6.1
-- **Đầu ra (Output):** Bản nháp đầy đủ (Full Draft) của Báo cáo kỹ thuật (8–12 trang tiếng Anh)
-- **Tiêu chí nghiệm thu (DoD):** Đầy đủ 9 mục nội dung theo quy định; độ dài nằm trong khoảng 8–12 trang; lập luận học thuật chặt chẽ, số liệu nhất quán giữa các bảng.
+- **T6.2 — Viết Technical Report tiếng Anh - Phần 2 từ Mục 6 đến Mục 9 (Bảo):**
+  - Viết 4 mục tiếp theo bằng tiếng Anh và ghép nối với Phần 1 của Dương thành bản nháp hoàn chỉnh (Full Draft dài 8–12 trang):
+    - *Section 6 (Technical Trade-offs):* Phân tích 3 đánh đổi kỹ thuật cốt lõi (Mô hình riêng từng tỉnh vs. Mô hình gộp toàn quốc; Mô hình cây phi tuyến vs. Mô hình tuyến tính khi dịch chuyển phân phối thời tiết giao mùa; Chi phí vs. Thời gian thực thi trên CloudSim).
+    - *Section 7 (Algorithms & Processing Methods):* Quy trình kiểm toán dữ liệu 8 bước, kỹ thuật trích xuất 31 đặc trưng vật lý khí quyển và cơ chế dừng sớm công bằng (Early Stopping 30 vòng).
+    - *Section 8 (Experimental Results):* Bảng quy đổi chuẩn VN_AQI, bảng kết quả thực nghiệm 5 mô hình ML trên 9 tỉnh (8/9 tỉnh vượt Baseline) và kết quả mô phỏng CloudSim.
+    - *Section 9 (Lessons Learned & Future Work):* Phân tích nguyên nhân dữ liệu tại Bắc Ninh, Tây Ninh và hướng phát triển tiếp theo.
 
 ---
 
@@ -255,86 +159,31 @@
 | **T7.4** | Đóng gói và kiểm duyệt bộ hồ sơ Mã nguồn, Dữ liệu và Artifacts cuối kỳ | **Bảo** | T5.3, T7.1, T7.3 | P0 | **20/11/2026** | Cần làm | Gói nộp bài hoàn chỉnh trước hạn chót 24 giờ |
 | **T7.5** | Nộp chính thức toàn bộ hồ sơ Đồ án cuối kỳ lên hệ thống | **Dương** | T7.4 | P0 | **21/11/2026** | Cột mốc | Hoàn thành nộp bài và bảo vệ đúng hạn 21/11/2026 |
 
-#### Mô tả chi tiết từng Task trong Tuần 3:
+#### Mô tả công việc từng Task trong Tuần 3:
 
-#### Task T7.1: Hoàn thiện Trích dẫn, AI-use Statement và hiệu đính Báo cáo tiếng Anh
-- **Người phụ trách:** Dương | **Hạn hoàn thành:** 16/11/2026 | **Độ ưu tiên:** P0
-- **Mục tiêu:** Chuẩn hóa toàn bộ văn phong học thuật, bổ sung danh mục tài liệu tham khảo chính xác và hoàn thiện bản tuyên bố sử dụng AI theo quy định bắt buộc của môn học.
-- **Nội dung mô tả công việc:**
-  1. Rà soát ngữ pháp, chính tả, thuật ngữ chuyên ngành tiếng Anh trên toàn bộ bản nháp 8–12 trang (Academic Proofreading).
-  2. Chuẩn hóa danh mục tài liệu trích dẫn (References / Citations) theo chuẩn IEEE/APA:
-     - Dữ liệu quan trắc Cổng CEM/TEDP (Bộ Tài nguyên & Môi trường).
-     - Quyết định số 1459/QĐ-TCMT (Quy chuẩn kỹ thuật tính toán chỉ số VN_AQI).
-     - Nguồn dữ liệu mô hình số trị Open-Meteo ERA5 / Historical Forecast.
-     - Các bài báo khoa học và tài liệu kỹ thuật về CloudSim, LightGBM, XGBoost, Scikit-learn.
-     - Bảng đơn giá dịch vụ điện toán đám mây Google Cloud Platform (Region `asia-southeast1`).
-  3. Soạn thảo Bản tuyên bố sử dụng công cụ AI (AI-use Statement) theo đúng Mục 7.3 của `docs/context.md`: Phân định minh bạch nội dung nào do công cụ AI hỗ trợ, nội dung nào do sinh viên tự nghiên cứu và phát triển.
-  4. Xuất file báo cáo chính thức định dạng PDF và Word chuẩn định dạng (lề, font chữ, tiêu đề bảng/hình).
-- **Đầu vào (Input):** Full Draft Báo cáo từ T6.2
-- **Đầu ra (Output):** `Final_Technical_Report.pdf` (và `.docx`)
-- **Tiêu chí nghiệm thu (DoD):** Báo cáo đạt chuẩn từ 8 đến 12 trang; đầy đủ 9 phần nội dung; có đủ References và AI-use Statement; văn phong tiếng Anh mạch lạc, chuyên nghiệp.
+- **T7.1 — Hoàn thiện Trích dẫn, AI-use Statement và hiệu đính Báo cáo tiếng Anh (Dương):**
+  - Hiệu đính toàn bộ ngữ pháp, thuật ngữ tiếng Anh và định dạng trình bày của bản báo cáo 8–12 trang.
+  - Chuẩn hóa danh mục tài liệu tham khảo (Quyết định 1459/QĐ-TCMT về VN_AQI, cổng dữ liệu CEM/TEDP, dữ liệu khí tượng Open-Meteo ERA5, bảng giá Google Cloud Platform, tài liệu CloudSim và các thuật toán học máy).
+  - Viết mục **AI-use Statement** (bắt buộc theo quy định môn học) nêu rõ phạm vi sử dụng công cụ AI hỗ trợ và phần công việc do nhóm tự thực hiện, sau đó xuất bản chốt `Final_Technical_Report.pdf`.
 
-#### Task T7.2: Thiết kế bộ Slide thuyết trình cuối kỳ (English, 15 phút)
-- **Người phụ trách:** Dương | **Hạn hoàn thành:** 18/11/2026 | **Độ ưu tiên:** P0
-- **Mục tiêu:** Xây dựng bộ trình chiếu trực quan, cô đọng, làm nổi bật các đóng góp kỹ thuật cốt lõi và phân chia thời lượng trình bày cho cả 4 thành viên trong 15 phút.
-- **Nội dung mô tả công việc:**
-  1. Thiết kế bộ Slide thuyết trình (khoảng 12–15 slides) bằng tiếng Anh với phong cách chuyên nghiệp, hiện đại.
-  2. Bố cục nội dung Slide bám sát 4 tiêu chí chấm điểm trong Rubric:
-     - Slide 1-3: Giới thiệu đề tài, bài toán dự báo sớm $I_{\text{PM2.5}}$ và Kiến trúc tổng thể 5V Big Data.
-     - Slide 4-6: Quy trình thu nạp dữ liệu 4 tháng, kiểm toán 8 bước QCVN và thiết kế lưu trữ Medallion Parquet.
-     - Slide 7-9: 31 đặc trưng vật lý khí quyển và kết quả thực nghiệm đối sánh 5 mô hình ML trên 9 tỉnh.
-     - Slide 10-12: Kết quả mô phỏng CloudSim 3 cấu hình máy ảo, bảng phân tích tối ưu chi phí (CLO5) và kiến trúc UI.
-     - Slide 13-14: Bài học kinh nghiệm (Lessons Learned) và Hướng phát triển trong tương lai.
-     - Slide 15: Lời cảm ơn và Phần Q&A.
-  3. Phân chia rõ ràng phần trình bày trên Slide tương ứng với 4 thành viên (Dương: Phần 1, Quý: Phần 2, Bảo: Phần 3, Hiếu: Phần 4) theo đúng kịch bản Mục 6.
-- **Đầu vào (Input):** `Final_Technical_Report.pdf`, hình ảnh sơ đồ kiến trúc, biểu đồ kết quả
-- **Đầu ra (Output):** `Final_Presentation_Slides.pptx` (và bản export `.pdf`)
-- **Tiêu chí nghiệm thu (DoD):** Slide đẹp mắt, trực quan, nhiều hình ảnh và biểu đồ; không bị quá nhiều chữ; bố cục khớp hoàn toàn với kịch bản thuyết trình 15 phút.
+- **T7.2 — Thiết kế bộ Slide thuyết trình cuối kỳ 15 phút bằng tiếng Anh (Dương):**
+  - Thiết kế bộ Slide (12–15 trang) cô đọng, trực quan bằng biểu đồ và sơ đồ kiến trúc, chia làm 4 phần khớp với thời lượng trình bày của 4 thành viên:
+    - *Phần 1 (Dương - 3,5 phút):* Bài toán dự báo PM2.5 trước 24h, kiến trúc 5V Big Data và phân tích tối ưu chi phí đám mây (CLO5).
+    - *Phần 2 (Quý - 3,5 phút):* Thu thập dữ liệu 4 tháng, kiểm toán 8 bước QCVN, lưu trữ Medallion Parquet và kết quả nén/tăng tốc I/O.
+    - *Phần 3 (Bảo - 4,0 phút):* 31 đặc trưng vật lý khí quyển, kết quả đối sánh 5 mô hình ML trên 9 tỉnh và giải thích sự khác biệt giữa các vùng khí hậu.
+    - *Phần 4 (Hiếu - 4,0 phút):* Kết quả mô phỏng 3 cấu hình máy ảo trên CloudSim và Demo trực tiếp giao diện UI Bản đồ Dự báo Không gian.
 
-#### Task T7.3: Quay video backup Demo UI và điều phối buổi diễn tập thuyết trình 15 phút
-- **Người phụ trách:** Hiếu | **Hạn hoàn thành:** 19/11/2026 | **Độ ưu tiên:** P0
-- **Mục tiêu:** Bảo đảm buổi thuyết trình chính thức diễn ra trơn tru, đúng thời gian quy định và có phương án dự phòng rủi ro kỹ thuật 100%.
-- **Nội dung mô tả công việc:**
-  1. Quay sẵn 1 video màn hình (độ dài khoảng 2–3 phút, chất lượng Full HD có thuyết minh ngắn) ghi lại toàn bộ quá trình tương tác trên UI Dashboard: Thao tác bản đồ 15 trạm, lọc theo tỉnh, xem chuỗi thời gian dự báo 24h, xem biểu đồ Feature Importance và kết quả CloudSim. Video này dùng làm phương án dự phòng nếu máy chiếu hoặc mạng tại hội trường gặp sự cố.
-  2. Tổ chức buổi diễn tập thuyết trình thử (Mock Defense) cho cả 4 thành viên:
-     - Bấm giờ chính xác từng phần theo kịch bản: Dương (3.5 phút) -> Quý (3.5 phút) -> Bảo (4.0 phút) -> Hiếu (4.0 phút).
-     - Đảm bảo tổng thời gian nằm trong khoảng 14:00 đến 14:50 (không bị quá 15 phút).
-  3. Tổng duyệt bộ câu hỏi phản biện giả định (Q&A Preparation):
-     - Tại sao không dùng Apache Spark mà dùng Python + Parquet + CloudSim?
-     - Tại sao có tỉnh LightGBM thắng nhưng có tỉnh Linear Regression thắng?
-     - Công thức tính chi phí đám mây và quy tắc 60 giây của GCP hoạt động ra sao?
-     - Làm sao chứng minh mô hình không bị rò rỉ dữ liệu tương lai (Data Leakage)?
-- **Đầu vào (Input):** `code/ui/app_dashboard.py`, `Final_Presentation_Slides.pptx`
-- **Đầu ra (Output):** Video backup demo (`demo_backup.mp4`), Biên bản góp ý buổi diễn tập
-- **Tiêu chí nghiệm thu (DoD):** Cả 4 thành viên đều thuyết trình trôi chảy bằng tiếng Anh; chuyển giao giữa các thành viên mượt mà; hoàn thành toàn bộ bài thuyết trình trong đúng khung 15 phút.
+- **T7.3 — Quay video backup Demo UI và điều phối buổi diễn tập thuyết trình 15 phút (Hiếu):**
+  - Quay sẵn 1 video màn hình (2–3 phút, độ phân giải Full HD) thao tác toàn bộ 3 Tab trên UI Dashboard để làm phương án dự phòng nếu xảy ra sự cố kỹ thuật khi bảo vệ trực tiếp.
+  - Tổ chức buổi diễn tập thuyết trình bấm giờ cho cả 4 thành viên (đảm bảo tổng thời gian khớp khung 14–15 phút) và thống nhất câu trả lời cho các câu hỏi phản biện trọng tâm của Hội đồng.
 
-#### Task T7.4: Đóng gói và kiểm duyệt bộ hồ sơ Mã nguồn, Dữ liệu và Artifacts cuối kỳ
-- **Người phụ trách:** Bảo | **Hạn hoàn thành:** 20/11/2026 | **Độ ưu tiên:** P0
-- **Mục tiêu:** Chuẩn bị gói sản phẩm mã nguồn hoàn chỉnh, sạch sẽ, sẵn sàng nộp lên hệ thống trước hạn chót 24 giờ.
-- **Nội dung mô tả công việc:**
-  1. Dọn dẹp toàn bộ các tệp tạm, file cache (`__pycache__`, `.ipynb_checkpoints`, file log tạm thời).
-  2. Kiểm tra tính đồng bộ của file `requirements.txt` với môi trường ảo chạy thực tế.
-  3. Đóng gói đầy đủ mã nguồn trong `code/`, dữ liệu chuẩn hóa trong `lakehouse_storage/` và `data_test/`, kết quả mô hình trong `output/province_models/` và báo cáo CloudSim trong `output/cloudsim_benchmark/`.
-  4. Chạy kiểm tra lần cuối lệnh `git status` và đẩy toàn bộ commit cuối cùng lên repository GitHub `quytvo/BigData.git`.
-  5. Tạo bản lưu trữ nén dự phòng (`Source_Code_Final.zip`) lưu trên Google Drive của nhóm.
-- **Đầu vào (Input):** Toàn bộ thư mục workspace của dự án
-- **Đầu ra (Output):** Repository GitHub sạch sẽ, file nén `Source_Code_Final.zip`
-- **Tiêu chí nghiệm thu (DoD):** Mã nguồn đầy đủ, không thiếu file; repository trên GitHub ở trạng thái clean; sẵn sàng bàn giao cho người nộp bài.
+- **T7.4 — Đóng gói và kiểm duyệt bộ hồ sơ Mã nguồn, Dữ liệu và Artifacts cuối kỳ (Bảo):**
+  - Dọn dẹp các tệp tạm/cache, kiểm tra lần cuối tính đồng bộ của `requirements.txt`, mã nguồn trong `code/`, dữ liệu trong `lakehouse_storage/` và kết quả trong `output/`.
+  - Đẩy bản commit hoàn chỉnh cuối cùng lên nhánh `main` của GitHub (`quytvo/BigData.git`) và xuất thêm gói nén dự phòng trước hạn nộp 24 giờ.
 
-#### Task T7.5: Nộp chính thức toàn bộ hồ sơ Đồ án cuối kỳ lên hệ thống
-- **Người phụ trách:** Dương | **Hạn hoàn thành:** 21/11/2026 | **Độ ưu tiên:** P0
-- **Mục tiêu:** Hoàn tất nộp đầy đủ toàn bộ các sản phẩm bàn giao của đồ án lên hệ thống học tập của trường đúng hạn quy định.
-- **Nội dung mô tả công việc:**
-  1. Rà soát danh mục các sản phẩm bàn giao bắt buộc theo Mục 5 của `docs/context.md`:
-     - Working Code & Deployment Notes (`docs/deployment_notes.md` + link GitHub).
-     - Technical Report tiếng Anh 8–12 trang (file PDF kèm AI-use Statement và Citations).
-     - Final Presentation Slides (file PPTX/PDF).
-  2. Đăng tải toàn bộ hồ sơ lên cổng nộp bài theo đúng định dạng và hướng dẫn của giảng viên.
-  3. Gửi thông báo xác nhận nộp bài thành công cho tất cả các thành viên trong nhóm.
-  4. Tham gia buổi báo cáo và thuyết trình chính thức (15 phút) trước Hội đồng môn học.
-- **Đầu vào (Input):** `Final_Technical_Report.pdf`, `Final_Presentation_Slides.pptx`, link GitHub repository
-- **Đầu ra (Output):** Biên nhận nộp bài thành công trên hệ thống, Hoàn thành bảo vệ đồ án cuối kỳ
-- **Tiêu chí nghiệm thu (DoD):** Hồ sơ nộp đầy đủ 100% các hạng mục trước giờ đóng cổng nộp bài; cả 4 thành viên tham gia bảo vệ đồ án thành công.
+- **T7.5 — Nộp chính thức toàn bộ hồ sơ Đồ án cuối kỳ lên hệ thống (Dương):**
+  - Kiểm tra đầy đủ 3 hạng mục bắt buộc: Mã nguồn kèm `docs/deployment_notes.md`, Báo cáo kỹ thuật tiếng Anh (8–12 trang kèm Citations và AI-use Statement), và Slide thuyết trình cuối kỳ.
+  - Nộp chính thức lên hệ thống của trường trước giờ đóng cổng và cùng toàn nhóm tham gia bảo vệ đồ án vào ngày 21/11/2026.
 
 ---
 
