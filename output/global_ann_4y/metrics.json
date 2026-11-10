@@ -1,0 +1,883 @@
+{
+  "model_type": "SpatioTemporalGlobalANN (With Spatial Attention)",
+  "use_spatial_attention": true,
+  "device": "cpu",
+  "elapsed_seconds": 302.39,
+  "n_total_samples": 280104,
+  "n_stations": 11,
+  "n_provinces": 11,
+  "split_ratio": {
+    "train": 0.7,
+    "val": 0.1,
+    "test": 0.2
+  },
+  "n_train": 196064,
+  "n_val": 28017,
+  "n_test": 56023,
+  "train_end": "2025-12-24 15:00:00",
+  "val_end": "2026-04-09 18:00:00",
+  "best_hyperparameters": {
+    "hidden_dim": 128,
+    "n_layers": 2,
+    "station_emb_dim": 16,
+    "activation": "gelu",
+    "norm_type": "layernorm",
+    "dropout": 0.25,
+    "learning_rate": 0.0012,
+    "weight_decay": 0.001,
+    "batch_size": 512,
+    "loss_type": "huber",
+    "huber_delta": 15.0,
+    "max_spatial_gate": 0.3,
+    "attention_temp": 1.0,
+    "seed": 42
+  },
+  "best_epoch": 31,
+  "max_epochs": 250,
+  "early_stopping_patience": 30,
+  "use_overfit_guard": false,
+  "stop_reason": "Early Stopping [Patience]: Val RMSE không cải thiện sau 30 epochs (tốt nhất tại epoch 31: 25.4290)",
+  "global_metrics": {
+    "baseline_val": {
+      "rmse": 31.836793149479174,
+      "mae": 21.629846763637897,
+      "r2": 0.45246578198023657
+    },
+    "baseline_test": {
+      "rmse": 21.142844067542317,
+      "mae": 14.628960200157909,
+      "r2": 0.40336278770337886
+    },
+    "global_ann_val": {
+      "rmse": 25.42904474556518,
+      "mae": 17.825482886806686,
+      "r2": 0.6506886268080114
+    },
+    "global_ann_test": {
+      "rmse": 17.954167951397835,
+      "mae": 12.684142557163083,
+      "r2": 0.5697567255778098
+    },
+    "test_rmse_improvement_pct": 15.081585551868184,
+    "provinces_beating_baseline": "11/11"
+  },
+  "feature_group_contribution_pct": {
+    "pm25_lags_and_pollutants_pct": 49.67584830522537,
+    "weather_and_thermodynamics_pct": 33.07746380567551,
+    "station_id_identity_pct": 2.009863570332527,
+    "time_and_spatial_coords_pct": 15.236825466156006
+  },
+  "province_decision_contribution_pct": [
+    {
+      "province_name": "Lâm Đồng",
+      "n_stations": 1,
+      "station_ids": "28429342215451431160939106682",
+      "station_codes": "PROV_LAM_DONG",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_attention_share_pct": 11.432673454284668,
+      "gradient_saliency_share_pct": 13.431758880615234,
+      "train_gradient_energy_pct": 10.662752151489258,
+      "composite_decision_pct": 12.078323364257812,
+      "self_province_reliance_pct": 94.14900541305542,
+      "other_provinces_reliance_pct": 5.85099458694458
+    },
+    {
+      "province_name": "Ninh Bình",
+      "n_stations": 1,
+      "station_ids": "28429342215451431160939106688",
+      "station_codes": "PROV_NINH_BINH",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_attention_share_pct": 8.750848770141602,
+      "gradient_saliency_share_pct": 13.094559669494629,
+      "train_gradient_energy_pct": 11.966655731201172,
+      "composite_decision_pct": 11.131494522094727,
+      "self_province_reliance_pct": 88.63588571548462,
+      "other_provinces_reliance_pct": 11.36411428451538
+    },
+    {
+      "province_name": "Hải Phòng",
+      "n_stations": 1,
+      "station_ids": "28429342215451431160939106674",
+      "station_codes": "PROV_HAI_PHONG",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_attention_share_pct": 8.75786018371582,
+      "gradient_saliency_share_pct": 10.769450187683105,
+      "train_gradient_energy_pct": 12.335875511169434,
+      "composite_decision_pct": 10.278099250793456,
+      "self_province_reliance_pct": 88.2588803768158,
+      "other_provinces_reliance_pct": 11.741119623184204
+    },
+    {
+      "province_name": "Hà Nội",
+      "n_stations": 1,
+      "station_ids": "28429342215451431160939106671",
+      "station_codes": "PROV_HA_NOI",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_attention_share_pct": 8.34554672241211,
+      "gradient_saliency_share_pct": 11.025665283203125,
+      "train_gradient_energy_pct": 12.606324195861816,
+      "composite_decision_pct": 10.269749641418457,
+      "self_province_reliance_pct": 87.29920387268066,
+      "other_provinces_reliance_pct": 12.700796127319336
+    },
+    {
+      "province_name": "Hưng Yên",
+      "n_stations": 1,
+      "station_ids": "28429342215451431160939106677",
+      "station_codes": "PROV_HUNG_YEN",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_attention_share_pct": 8.629698753356934,
+      "gradient_saliency_share_pct": 10.404605865478516,
+      "train_gradient_energy_pct": 11.004501342773438,
+      "composite_decision_pct": 9.814622116088866,
+      "self_province_reliance_pct": 87.92654871940613,
+      "other_provinces_reliance_pct": 12.073451280593872
+    },
+    {
+      "province_name": "Bắc Ninh",
+      "n_stations": 1,
+      "station_ids": "28429342215451431160939106654",
+      "station_codes": "PROV_BAC_NINH",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_attention_share_pct": 8.60377025604248,
+      "gradient_saliency_share_pct": 9.503777503967285,
+      "train_gradient_energy_pct": 10.523761749267578,
+      "composite_decision_pct": 9.347771453857423,
+      "self_province_reliance_pct": 88.61543536186218,
+      "other_provinces_reliance_pct": 11.384564638137817
+    },
+    {
+      "province_name": "Đà Nẵng",
+      "n_stations": 1,
+      "station_ids": "28429342215451431160939106662",
+      "station_codes": "PROV_DA_NANG",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_attention_share_pct": 9.624773979187012,
+      "gradient_saliency_share_pct": 7.873301982879639,
+      "train_gradient_energy_pct": 7.433235168457031,
+      "composite_decision_pct": 8.485877418518067,
+      "self_province_reliance_pct": 93.46686601638794,
+      "other_provinces_reliance_pct": 6.5331339836120605
+    },
+    {
+      "province_name": "Quảng Ngãi",
+      "n_stations": 1,
+      "station_ids": "28429342215451431160939106694",
+      "station_codes": "PROV_QUANG_NGAI",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_attention_share_pct": 9.180097579956055,
+      "gradient_saliency_share_pct": 7.785375118255615,
+      "train_gradient_energy_pct": 5.503389835357666,
+      "composite_decision_pct": 7.886867046356201,
+      "self_province_reliance_pct": 93.92619729042053,
+      "other_provinces_reliance_pct": 6.073802709579468
+    },
+    {
+      "province_name": "Gia Lai",
+      "n_stations": 1,
+      "station_ids": "28429342215451431160939106668",
+      "station_codes": "PROV_GIA_LAI",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_attention_share_pct": 8.763063430786133,
+      "gradient_saliency_share_pct": 5.6719889640808105,
+      "train_gradient_energy_pct": 6.670751094818115,
+      "composite_decision_pct": 7.1081711769104015,
+      "self_province_reliance_pct": 91.77669286727905,
+      "other_provinces_reliance_pct": 8.223307132720947
+    },
+    {
+      "province_name": "Tây Ninh",
+      "n_stations": 1,
+      "station_ids": "28429342215451431160939106700",
+      "station_codes": "PROV_TAY_NINH",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_attention_share_pct": 8.931360244750977,
+      "gradient_saliency_share_pct": 5.420841693878174,
+      "train_gradient_energy_pct": 6.471898555755615,
+      "composite_decision_pct": 7.035260486602784,
+      "self_province_reliance_pct": 94.10436749458313,
+      "other_provinces_reliance_pct": 5.89563250541687
+    },
+    {
+      "province_name": "HCM",
+      "n_stations": 1,
+      "station_ids": "28429342215451431160939106697_hcm",
+      "station_codes": "PROV_HCM",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_attention_share_pct": 8.98030948638916,
+      "gradient_saliency_share_pct": 5.018675804138184,
+      "train_gradient_energy_pct": 4.820847034454346,
+      "composite_decision_pct": 6.563763523101807,
+      "self_province_reliance_pct": 94.79175806045532,
+      "other_provinces_reliance_pct": 5.208241939544678
+    }
+  ],
+  "station_id_decision_contribution_pct": [
+    {
+      "station_idx": 6,
+      "station_id": "28429342215451431160939106682",
+      "station_code": "PROV_LAM_DONG",
+      "province_name": "Lâm Đồng",
+      "station_name": "Lâm Đồng: Trung bình 1.0 trạm",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_gate_open_pct": 12.051372528076172,
+      "spatial_attention_share_pct": 11.432673454284668,
+      "gradient_saliency_share_pct": 13.431758880615234,
+      "train_gradient_energy_pct": 10.662752151489258,
+      "composite_decision_pct": 12.078323364257812
+    },
+    {
+      "station_idx": 7,
+      "station_id": "28429342215451431160939106688",
+      "station_code": "PROV_NINH_BINH",
+      "province_name": "Ninh Bình",
+      "station_name": "Ninh Bình: Trung bình 1.0 trạm",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_gate_open_pct": 15.286848068237305,
+      "spatial_attention_share_pct": 8.750848770141602,
+      "gradient_saliency_share_pct": 13.094559669494629,
+      "train_gradient_energy_pct": 11.966655731201172,
+      "composite_decision_pct": 11.131494522094727
+    },
+    {
+      "station_idx": 5,
+      "station_id": "28429342215451431160939106674",
+      "station_code": "PROV_HAI_PHONG",
+      "province_name": "Hải Phòng",
+      "station_name": "Hải Phòng: Trung bình 1.0 trạm",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_gate_open_pct": 15.261957168579102,
+      "spatial_attention_share_pct": 8.75786018371582,
+      "gradient_saliency_share_pct": 10.769450187683105,
+      "train_gradient_energy_pct": 12.335875511169434,
+      "composite_decision_pct": 10.27810001373291
+    },
+    {
+      "station_idx": 3,
+      "station_id": "28429342215451431160939106671",
+      "station_code": "PROV_HA_NOI",
+      "province_name": "Hà Nội",
+      "station_name": "Hà Nội: Trung bình 2.0 trạm",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_gate_open_pct": 14.629952430725098,
+      "spatial_attention_share_pct": 8.34554672241211,
+      "gradient_saliency_share_pct": 11.025665283203125,
+      "train_gradient_energy_pct": 12.606324195861816,
+      "composite_decision_pct": 10.269749641418457
+    },
+    {
+      "station_idx": 4,
+      "station_id": "28429342215451431160939106677",
+      "station_code": "PROV_HUNG_YEN",
+      "province_name": "Hưng Yên",
+      "station_name": "Hưng Yên: Trung bình 2.0 trạm",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_gate_open_pct": 15.108352661132812,
+      "spatial_attention_share_pct": 8.629698753356934,
+      "gradient_saliency_share_pct": 10.404605865478516,
+      "train_gradient_energy_pct": 11.004501342773438,
+      "composite_decision_pct": 9.814621925354004
+    },
+    {
+      "station_idx": 0,
+      "station_id": "28429342215451431160939106654",
+      "station_code": "PROV_BAC_NINH",
+      "province_name": "Bắc Ninh",
+      "station_name": "Bắc Ninh: Trung bình 1.0 trạm",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_gate_open_pct": 14.199050903320312,
+      "spatial_attention_share_pct": 8.60377025604248,
+      "gradient_saliency_share_pct": 9.503777503967285,
+      "train_gradient_energy_pct": 10.523761749267578,
+      "composite_decision_pct": 9.347771644592285
+    },
+    {
+      "station_idx": 10,
+      "station_id": "28429342215451431160939106662",
+      "station_code": "PROV_DA_NANG",
+      "province_name": "Đà Nẵng",
+      "station_name": "Đà Nẵng: Trung bình 2.0 trạm",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_gate_open_pct": 10.597925186157227,
+      "spatial_attention_share_pct": 9.624773979187012,
+      "gradient_saliency_share_pct": 7.873301982879639,
+      "train_gradient_energy_pct": 7.433235168457031,
+      "composite_decision_pct": 8.48587703704834
+    },
+    {
+      "station_idx": 8,
+      "station_id": "28429342215451431160939106694",
+      "station_code": "PROV_QUANG_NGAI",
+      "province_name": "Quảng Ngãi",
+      "station_name": "Quảng Ngãi: Trung bình 1.0 trạm",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_gate_open_pct": 12.109508514404297,
+      "spatial_attention_share_pct": 9.180097579956055,
+      "gradient_saliency_share_pct": 7.785375118255615,
+      "train_gradient_energy_pct": 5.503389835357666,
+      "composite_decision_pct": 7.886867046356201
+    },
+    {
+      "station_idx": 1,
+      "station_id": "28429342215451431160939106668",
+      "station_code": "PROV_GIA_LAI",
+      "province_name": "Gia Lai",
+      "station_name": "Gia Lai: Trung bình 1.0 trạm",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_gate_open_pct": 10.80531120300293,
+      "spatial_attention_share_pct": 8.763063430786133,
+      "gradient_saliency_share_pct": 5.6719889640808105,
+      "train_gradient_energy_pct": 6.670751094818115,
+      "composite_decision_pct": 7.108171463012695
+    },
+    {
+      "station_idx": 9,
+      "station_id": "28429342215451431160939106700",
+      "station_code": "PROV_TAY_NINH",
+      "province_name": "Tây Ninh",
+      "station_name": "Tây Ninh: Trung bình 1.0 trạm",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_gate_open_pct": 10.743917465209961,
+      "spatial_attention_share_pct": 8.931360244750977,
+      "gradient_saliency_share_pct": 5.420841693878174,
+      "train_gradient_energy_pct": 6.471898555755615,
+      "composite_decision_pct": 7.0352606773376465
+    },
+    {
+      "station_idx": 2,
+      "station_id": "28429342215451431160939106697_hcm",
+      "station_code": "PROV_HCM",
+      "province_name": "HCM",
+      "station_name": "HCM: Trung bình 4.0 trạm",
+      "sample_share_pct": 9.090909090909092,
+      "spatial_gate_open_pct": 11.093046188354492,
+      "spatial_attention_share_pct": 8.98030948638916,
+      "gradient_saliency_share_pct": 5.018675804138184,
+      "train_gradient_energy_pct": 4.820847034454346,
+      "composite_decision_pct": 6.563763618469238
+    }
+  ],
+  "province_attention_matrix_pct": {
+    "Bắc Ninh": {
+      "Bắc Ninh": 88.6154,
+      "Gia Lai": 0.4641,
+      "HCM": 0.088,
+      "Hà Nội": 1.2336,
+      "Hưng Yên": 1.0288,
+      "Hải Phòng": 1.5562,
+      "Lâm Đồng": 0.3458,
+      "Ninh Bình": 0.6714,
+      "Quảng Ngãi": 0.3319,
+      "Tây Ninh": 0.0591,
+      "Đà Nẵng": 0.247
+    },
+    "Gia Lai": {
+      "Bắc Ninh": 0.4959,
+      "Gia Lai": 91.7767,
+      "HCM": 0.2395,
+      "Hà Nội": 0.5174,
+      "Hưng Yên": 0.7576,
+      "Hải Phòng": 0.5391,
+      "Lâm Đồng": 0.7267,
+      "Ninh Bình": 0.6124,
+      "Quảng Ngãi": 0.3819,
+      "Tây Ninh": 0.2047,
+      "Đà Nẵng": 0.1417
+    },
+    "HCM": {
+      "Bắc Ninh": 0.1801,
+      "Gia Lai": 0.6164,
+      "HCM": 94.7918,
+      "Hà Nội": 0.3462,
+      "Hưng Yên": 0.1832,
+      "Hải Phòng": 0.1871,
+      "Lâm Đồng": 0.0909,
+      "Ninh Bình": 0.3093,
+      "Quảng Ngãi": 0.1523,
+      "Tây Ninh": 1.8578,
+      "Đà Nẵng": 0.0682
+    },
+    "Hà Nội": {
+      "Bắc Ninh": 0.9807,
+      "Gia Lai": 0.2346,
+      "HCM": 0.0875,
+      "Hà Nội": 87.2992,
+      "Hưng Yên": 0.9695,
+      "Hải Phòng": 0.9041,
+      "Lâm Đồng": 0.2119,
+      "Ninh Bình": 0.6566,
+      "Quảng Ngãi": 0.2273,
+      "Tây Ninh": 0.0793,
+      "Đà Nẵng": 0.1504
+    },
+    "Hưng Yên": {
+      "Bắc Ninh": 1.4108,
+      "Gia Lai": 0.4932,
+      "HCM": 0.2017,
+      "Hà Nội": 1.6273,
+      "Hưng Yên": 87.9265,
+      "Hải Phòng": 1.1868,
+      "Lâm Đồng": 0.1359,
+      "Ninh Bình": 1.0813,
+      "Quảng Ngãi": 0.4078,
+      "Tây Ninh": 0.1542,
+      "Đà Nẵng": 0.3011
+    },
+    "Hải Phòng": {
+      "Bắc Ninh": 1.9008,
+      "Gia Lai": 0.2863,
+      "HCM": 0.1777,
+      "Hà Nội": 1.868,
+      "Hưng Yên": 1.2948,
+      "Hải Phòng": 88.2589,
+      "Lâm Đồng": 0.1925,
+      "Ninh Bình": 1.8048,
+      "Quảng Ngãi": 0.1859,
+      "Tây Ninh": 0.1797,
+      "Đà Nẵng": 0.1871
+    },
+    "Lâm Đồng": {
+      "Bắc Ninh": 2.7104,
+      "Gia Lai": 2.8896,
+      "HCM": 1.2821,
+      "Hà Nội": 4.2,
+      "Hưng Yên": 3.9676,
+      "Hải Phòng": 3.8234,
+      "Lâm Đồng": 94.149,
+      "Ninh Bình": 4.4586,
+      "Quảng Ngãi": 1.9621,
+      "Tây Ninh": 2.3568,
+      "Đà Nẵng": 3.9596
+    },
+    "Ninh Bình": {
+      "Bắc Ninh": 1.9928,
+      "Gia Lai": 0.2186,
+      "HCM": 0.116,
+      "Hà Nội": 1.6843,
+      "Hưng Yên": 1.6811,
+      "Hải Phòng": 1.4269,
+      "Lâm Đồng": 0.0748,
+      "Ninh Bình": 88.6359,
+      "Quảng Ngãi": 0.208,
+      "Tây Ninh": 0.1076,
+      "Đà Nẵng": 0.1135
+    },
+    "Quảng Ngãi": {
+      "Bắc Ninh": 0.4069,
+      "Gia Lai": 1.0158,
+      "HCM": 0.2893,
+      "Hà Nội": 0.2812,
+      "Hưng Yên": 0.5351,
+      "Hải Phòng": 0.3909,
+      "Lâm Đồng": 1.8203,
+      "Ninh Bình": 0.4451,
+      "Quảng Ngãi": 93.9262,
+      "Tây Ninh": 0.5582,
+      "Đà Nẵng": 1.3121
+    },
+    "Tây Ninh": {
+      "Bắc Ninh": 0.1716,
+      "Gia Lai": 0.2499,
+      "HCM": 2.566,
+      "Hà Nội": 0.172,
+      "Hưng Yên": 0.1659,
+      "Hải Phòng": 0.2312,
+      "Lâm Đồng": 0.141,
+      "Ninh Bình": 0.2997,
+      "Quảng Ngãi": 0.091,
+      "Tây Ninh": 94.1044,
+      "Đà Nẵng": 0.0523
+    },
+    "Đà Nẵng": {
+      "Bắc Ninh": 1.1347,
+      "Gia Lai": 1.7548,
+      "HCM": 0.1604,
+      "Hà Nội": 0.7708,
+      "Hưng Yên": 1.4898,
+      "Hải Phòng": 1.4953,
+      "Lâm Đồng": 2.1112,
+      "Ninh Bình": 1.0249,
+      "Quảng Ngãi": 2.1255,
+      "Tây Ninh": 0.3383,
+      "Đà Nẵng": 93.4669
+    }
+  },
+  "per_province_test_metrics": {
+    "Bắc Ninh": {
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 27.020040794635342,
+        "mae": 19.997470294973095,
+        "r2": 0.05528966437527716
+      },
+      "global_ann": {
+        "rmse": 20.93570301688896,
+        "mae": 15.879256618607377,
+        "r2": 0.43284500146470783
+      },
+      "rmse_improvement_pct": 22.517870435467245,
+      "beats_baseline": true,
+      "best_single_province_model": null,
+      "best_single_province_rmse": null
+    },
+    "Gia Lai": {
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 13.812901736113353,
+        "mae": 9.158822278509332,
+        "r2": 0.2711784907714735
+      },
+      "global_ann": {
+        "rmse": 12.656878504552582,
+        "mae": 9.458412339753686,
+        "r2": 0.38806603493976677
+      },
+      "rmse_improvement_pct": 8.369155544909068,
+      "beats_baseline": true,
+      "best_single_province_model": null,
+      "best_single_province_rmse": null
+    },
+    "HCM": {
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 13.901515981014635,
+        "mae": 10.380947536612464,
+        "r2": -0.06145473676068747
+      },
+      "global_ann": {
+        "rmse": 11.437128535699841,
+        "mae": 8.456259264893438,
+        "r2": 0.2815258343633452
+      },
+      "rmse_improvement_pct": 17.727472663272255,
+      "beats_baseline": true,
+      "best_single_province_model": null,
+      "best_single_province_rmse": null
+    },
+    "Hà Nội": {
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 24.00883618195314,
+        "mae": 17.998697177921667,
+        "r2": 0.2731095438634641
+      },
+      "global_ann": {
+        "rmse": 20.286270191702144,
+        "mae": 15.450688414923025,
+        "r2": 0.48104325477249354
+      },
+      "rmse_improvement_pct": 15.504983090555461,
+      "beats_baseline": true,
+      "best_single_province_model": "linear_regression",
+      "best_single_province_rmse": 21.344441139762218
+    },
+    "Hưng Yên": {
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 24.52979433904023,
+        "mae": 17.88123485542374,
+        "r2": 0.22223343998067602
+      },
+      "global_ann": {
+        "rmse": 19.262323492707576,
+        "mae": 14.224851460785361,
+        "r2": 0.5204004167974952
+      },
+      "rmse_improvement_pct": 21.473766854821303,
+      "beats_baseline": true,
+      "best_single_province_model": null,
+      "best_single_province_rmse": null
+    },
+    "Hải Phòng": {
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 25.80501181940363,
+        "mae": 17.494793886961276,
+        "r2": 0.23990521285406818
+      },
+      "global_ann": {
+        "rmse": 22.835092890787863,
+        "mae": 16.157082087897045,
+        "r2": 0.40479688606027553
+      },
+      "rmse_improvement_pct": 11.509077962842047,
+      "beats_baseline": true,
+      "best_single_province_model": null,
+      "best_single_province_rmse": null
+    },
+    "Lâm Đồng": {
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 16.44252477723037,
+        "mae": 12.088909698995002,
+        "r2": 0.3892286826287503
+      },
+      "global_ann": {
+        "rmse": 13.797061889501732,
+        "mae": 9.727322726439283,
+        "r2": 0.5699540631729982
+      },
+      "rmse_improvement_pct": 16.08915250893877,
+      "beats_baseline": true,
+      "best_single_province_model": null,
+      "best_single_province_rmse": null
+    },
+    "Ninh Bình": {
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 22.589453221544364,
+        "mae": 16.732674794559845,
+        "r2": 0.3527270647203874
+      },
+      "global_ann": {
+        "rmse": 21.38693465992995,
+        "mae": 16.511135605136925,
+        "r2": 0.4198061842396279
+      },
+      "rmse_improvement_pct": 5.323362853544106,
+      "beats_baseline": true,
+      "best_single_province_model": null,
+      "best_single_province_rmse": null
+    },
+    "Quảng Ngãi": {
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 24.28092076129512,
+        "mae": 15.592776239217851,
+        "r2": 0.5568554595726545
+      },
+      "global_ann": {
+        "rmse": 21.024659118900924,
+        "mae": 13.353856549627844,
+        "r2": 0.667743851791436
+      },
+      "rmse_improvement_pct": 13.410783200548243,
+      "beats_baseline": true,
+      "best_single_province_model": null,
+      "best_single_province_rmse": null
+    },
+    "Tây Ninh": {
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 18.382519847982547,
+        "mae": 12.307926395788282,
+        "r2": -0.012516023821547595
+      },
+      "global_ann": {
+        "rmse": 15.59875627953454,
+        "mae": 10.780876868483753,
+        "r2": 0.27092574462505437
+      },
+      "rmse_improvement_pct": 15.143536313132397,
+      "beats_baseline": true,
+      "best_single_province_model": null,
+      "best_single_province_rmse": null
+    },
+    "Đà Nẵng": {
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 15.840883037881506,
+        "mae": 11.284309042774481,
+        "r2": 0.3189565064926271
+      },
+      "global_ann": {
+        "rmse": 13.395400712184392,
+        "mae": 9.525826192246178,
+        "r2": 0.5130016465392271
+      },
+      "rmse_improvement_pct": 15.43779043030017,
+      "beats_baseline": true,
+      "best_single_province_model": null,
+      "best_single_province_rmse": null
+    }
+  },
+  "per_station_id_test_metrics": {
+    "28429342215451431160939106654": {
+      "station_id": "28429342215451431160939106654",
+      "station_code": "PROV_BAC_NINH",
+      "province_name": "Bắc Ninh",
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 27.020040794635342,
+        "mae": 19.997470294973095,
+        "r2": 0.05528966437527716
+      },
+      "global_ann": {
+        "rmse": 20.93570301688896,
+        "mae": 15.879256618607377,
+        "r2": 0.43284500146470783
+      },
+      "rmse_improvement_pct": 22.517870435467245
+    },
+    "28429342215451431160939106668": {
+      "station_id": "28429342215451431160939106668",
+      "station_code": "PROV_GIA_LAI",
+      "province_name": "Gia Lai",
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 13.812901736113353,
+        "mae": 9.158822278509332,
+        "r2": 0.2711784907714735
+      },
+      "global_ann": {
+        "rmse": 12.656878504552582,
+        "mae": 9.458412339753686,
+        "r2": 0.38806603493976677
+      },
+      "rmse_improvement_pct": 8.369155544909068
+    },
+    "28429342215451431160939106697_hcm": {
+      "station_id": "28429342215451431160939106697_hcm",
+      "station_code": "PROV_HCM",
+      "province_name": "HCM",
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 13.901515981014635,
+        "mae": 10.380947536612464,
+        "r2": -0.06145473676068747
+      },
+      "global_ann": {
+        "rmse": 11.437128535699841,
+        "mae": 8.456259264893438,
+        "r2": 0.2815258343633452
+      },
+      "rmse_improvement_pct": 17.727472663272255
+    },
+    "28429342215451431160939106671": {
+      "station_id": "28429342215451431160939106671",
+      "station_code": "PROV_HA_NOI",
+      "province_name": "Hà Nội",
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 24.00883618195314,
+        "mae": 17.998697177921667,
+        "r2": 0.2731095438634641
+      },
+      "global_ann": {
+        "rmse": 20.286270191702144,
+        "mae": 15.450688414923025,
+        "r2": 0.48104325477249354
+      },
+      "rmse_improvement_pct": 15.504983090555461
+    },
+    "28429342215451431160939106677": {
+      "station_id": "28429342215451431160939106677",
+      "station_code": "PROV_HUNG_YEN",
+      "province_name": "Hưng Yên",
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 24.52979433904023,
+        "mae": 17.88123485542374,
+        "r2": 0.22223343998067602
+      },
+      "global_ann": {
+        "rmse": 19.262323492707576,
+        "mae": 14.224851460785361,
+        "r2": 0.5204004167974952
+      },
+      "rmse_improvement_pct": 21.473766854821303
+    },
+    "28429342215451431160939106674": {
+      "station_id": "28429342215451431160939106674",
+      "station_code": "PROV_HAI_PHONG",
+      "province_name": "Hải Phòng",
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 25.80501181940363,
+        "mae": 17.494793886961276,
+        "r2": 0.23990521285406818
+      },
+      "global_ann": {
+        "rmse": 22.835092890787863,
+        "mae": 16.157082087897045,
+        "r2": 0.40479688606027553
+      },
+      "rmse_improvement_pct": 11.509077962842047
+    },
+    "28429342215451431160939106682": {
+      "station_id": "28429342215451431160939106682",
+      "station_code": "PROV_LAM_DONG",
+      "province_name": "Lâm Đồng",
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 16.44252477723037,
+        "mae": 12.088909698995002,
+        "r2": 0.3892286826287503
+      },
+      "global_ann": {
+        "rmse": 13.797061889501732,
+        "mae": 9.727322726439283,
+        "r2": 0.5699540631729982
+      },
+      "rmse_improvement_pct": 16.08915250893877
+    },
+    "28429342215451431160939106688": {
+      "station_id": "28429342215451431160939106688",
+      "station_code": "PROV_NINH_BINH",
+      "province_name": "Ninh Bình",
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 22.589453221544364,
+        "mae": 16.732674794559845,
+        "r2": 0.3527270647203874
+      },
+      "global_ann": {
+        "rmse": 21.38693465992995,
+        "mae": 16.511135605136925,
+        "r2": 0.4198061842396279
+      },
+      "rmse_improvement_pct": 5.323362853544106
+    },
+    "28429342215451431160939106694": {
+      "station_id": "28429342215451431160939106694",
+      "station_code": "PROV_QUANG_NGAI",
+      "province_name": "Quảng Ngãi",
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 24.28092076129512,
+        "mae": 15.592776239217851,
+        "r2": 0.5568554595726545
+      },
+      "global_ann": {
+        "rmse": 21.024659118900924,
+        "mae": 13.353856549627844,
+        "r2": 0.667743851791436
+      },
+      "rmse_improvement_pct": 13.410783200548243
+    },
+    "28429342215451431160939106700": {
+      "station_id": "28429342215451431160939106700",
+      "station_code": "PROV_TAY_NINH",
+      "province_name": "Tây Ninh",
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 18.382519847982547,
+        "mae": 12.307926395788282,
+        "r2": -0.012516023821547595
+      },
+      "global_ann": {
+        "rmse": 15.59875627953454,
+        "mae": 10.780876868483753,
+        "r2": 0.27092574462505437
+      },
+      "rmse_improvement_pct": 15.143536313132397
+    },
+    "28429342215451431160939106662": {
+      "station_id": "28429342215451431160939106662",
+      "station_code": "PROV_DA_NANG",
+      "province_name": "Đà Nẵng",
+      "n_test": 5093,
+      "baseline": {
+        "rmse": 15.840883037881506,
+        "mae": 11.284309042774481,
+        "r2": 0.3189565064926271
+      },
+      "global_ann": {
+        "rmse": 13.395400712184392,
+        "mae": 9.525826192246178,
+        "r2": 0.5130016465392271
+      },
+      "rmse_improvement_pct": 15.43779043030017
+    }
+  }
+}

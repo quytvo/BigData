@@ -27,26 +27,44 @@ Baseline: "giờ này giống 24 giờ trước" (persistence). Mỗi model đư
 
 import io
 import json
+import os
 import re
 import sys
 import unicodedata
 from pathlib import Path
+from typing import Dict, List, Optional, Tuple, Union
 
 # Fix encoding cho terminal Windows (cp1258 khong ho tro unicode tieng Viet)
-if hasattr(sys.stdout, "buffer"):
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
-import lightgbm as lgb
-import joblib
 import numpy as np
 import pandas as pd
-import xgboost as xgb
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVR
+
+try:
+    import joblib
+    from sklearn.ensemble import RandomForestRegressor
+    from sklearn.linear_model import LinearRegression
+    from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+    from sklearn.pipeline import make_pipeline
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.svm import SVR
+except ImportError:
+    joblib = None  # type: ignore
+    SVR = None  # type: ignore
+
+try:
+    import lightgbm as lgb
+except ImportError:
+    lgb = None  # type: ignore
+
+try:
+    import xgboost as xgb
+except ImportError:
+    xgb = None  # type: ignore
 
 # ============================================================
 # CẤU HÌNH CHUNG
@@ -54,9 +72,32 @@ from sklearn.svm import SVR
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 DATA_DIR = BASE_DIR / "data_test"
-TEDP_CSV = DATA_DIR / "cleaned_tedp_synced_120d.csv"
-WEATHER_CSV = DATA_DIR / "weather_openmeteo_station_120d.csv"
-OUTPUT_DIR = BASE_DIR / "output" / "province_models"
+
+# ============================================================
+# CẤU HÌNH ĐƯỜNG DẪN LAKEHOUSE STORAGE (SILVER & GOLD)
+# ============================================================
+LAKEHOUSE_DIR = BASE_DIR / "lakehouse_storage"
+SILVER_DIR = LAKEHOUSE_DIR / "silver"
+SILVER_PROVINCE_DIR = SILVER_DIR / "tedp_province"
+SILVER_WEATHER_DIR = SILVER_DIR / "weather_province"
+GOLD_DIR = LAKEHOUSE_DIR / "gold"
+GOLD_FEATURES_DIR = GOLD_DIR / "global_ann_features"
+PARQUET_DIR = SILVER_PROVINCE_DIR
+
+# Chọn bộ dữ liệu bằng biến môi trường DATASET_TAG:
+#   - "4y"  (mặc định): bản 4 năm, TRUNG BÌNH CÁC TRẠM THEO TỈNH (1 nút = 1 tỉnh)
+#                       <- sync_tedp_province.py + fetch_openmeteo_weather.py
+#   - "120d"          : bản cũ 120 ngày, từng trạm riêng (để tái lập kết quả cũ)
+DATASET_TAG = os.getenv("DATASET_TAG", "4y")
+if DATASET_TAG == "120d":
+    TEDP_CSV = DATA_DIR / "cleaned_tedp_synced_120d.csv"
+    WEATHER_CSV = DATA_DIR / "weather_openmeteo_station_120d.csv"
+    OUTPUT_SUFFIX = ""          # giữ nguyên thư mục output cũ
+else:
+    TEDP_CSV = DATA_DIR / f"cleaned_tedp_province_{DATASET_TAG}.csv"
+    WEATHER_CSV = DATA_DIR / f"weather_openmeteo_province_{DATASET_TAG}.csv"
+    OUTPUT_SUFFIX = f"_{DATASET_TAG}"   # không ghi đè kết quả 120 ngày
+OUTPUT_DIR = BASE_DIR / "output" / f"province_models{OUTPUT_SUFFIX}"
 
 MIN_ROWS = 1000          # ngưỡng số dòng tối thiểu để một tỉnh được train
 HORIZON = 24             # dự báo trước bao nhiêu giờ
@@ -127,14 +168,23 @@ def slugify(name):
 
 
 def rmse(y_true, y_pred):
-    return float(np.sqrt(mean_squared_error(y_true, y_pred)))
+    yt = np.asarray(y_true, dtype=np.float64)
+    yp = np.asarray(y_pred, dtype=np.float64)
+    return float(np.sqrt(np.mean((yt - yp) ** 2)))
 
 
 def metrics(y_true, y_pred):
+    yt = np.asarray(y_true, dtype=np.float64)
+    yp = np.asarray(y_pred, dtype=np.float64)
+    mse_val = float(np.mean((yt - yp) ** 2))
+    mae_val = float(np.mean(np.abs(yt - yp)))
+    ss_res = float(np.sum((yt - yp) ** 2))
+    ss_tot = float(np.sum((yt - np.mean(yt)) ** 2))
+    r2_val = 1.0 - (ss_res / ss_tot) if ss_tot > 0 else 0.0
     return {
-        "rmse": rmse(y_true, y_pred),
-        "mae": float(mean_absolute_error(y_true, y_pred)),
-        "r2": float(r2_score(y_true, y_pred)),
+        "rmse": float(np.sqrt(mse_val)),
+        "mae": mae_val,
+        "r2": float(r2_val),
     }
 
 
@@ -142,8 +192,68 @@ def metrics(y_true, y_pred):
 # 1. NẠP DỮ LIỆU + LỌC TỈNH THEO NGƯỠNG
 # ============================================================
 
-def load_merged():
-    """Nạp TEDP + thời tiết rồi ghép theo (station_code, datetime)."""
+def load_merged(province_name: Optional[str] = None, use_parquet: bool = True) -> pd.DataFrame:
+    """Nạp TEDP + thời tiết rồi ghép theo (station_code, datetime).
+
+    Hỗ trợ đọc từ tầng Silver Parquet với Partition Pruning theo province_name.
+    Tự động fallback về file CSV nếu use_parquet=False hoặc không tìm thấy Parquet.
+    """
+    can_use_parquet = (
+        use_parquet
+        and SILVER_DIR.exists()
+        and SILVER_PROVINCE_DIR.exists()
+        and SILVER_WEATHER_DIR.exists()
+    )
+
+    if can_use_parquet:
+        try:
+            if province_name is not None:
+                filters = [("province_name", "==", province_name)]
+                tedp = pd.read_parquet(SILVER_PROVINCE_DIR, filters=filters)
+                weather = pd.read_parquet(
+                    SILVER_WEATHER_DIR,
+                    columns=["station_code", "datetime"] + WEATHER_COLS,
+                    filters=filters,
+                )
+            else:
+                tedp = pd.read_parquet(SILVER_PROVINCE_DIR)
+                weather = pd.read_parquet(
+                    SILVER_WEATHER_DIR,
+                    columns=["station_code", "datetime"] + WEATHER_COLS,
+                )
+
+            # Chuẩn hóa kiểu dữ liệu định danh và timestamp
+            if "province_name" in tedp.columns:
+                tedp["province_name"] = tedp["province_name"].astype(str)
+            if "station_code" in tedp.columns:
+                tedp["station_code"] = tedp["station_code"].astype(str)
+            if "station_code" in weather.columns:
+                weather["station_code"] = weather["station_code"].astype(str)
+            if "datetime" in tedp.columns:
+                tedp["datetime"] = pd.to_datetime(tedp["datetime"])
+            if "datetime" in weather.columns:
+                weather["datetime"] = pd.to_datetime(weather["datetime"])
+
+            df = tedp.merge(weather, on=["station_code", "datetime"], how="left", validate="1:1")
+
+            # Đảm bảo chỉ chứa đúng province_name nếu được chỉ định
+            if province_name is not None and "province_name" in df.columns:
+                df = df[df["province_name"] == province_name].copy()
+
+            missing = int(df[WEATHER_COLS].isna().sum().sum())
+            if missing:
+                # Nếu thiếu dữ liệu thời tiết sau khi ghép từ Parquet, fallback về CSV
+                pass
+            else:
+                return df
+        except Exception:
+            # Fallback trong trường hợp Parquet bị lỗi hoặc không thể đọc
+            pass
+
+    # Fallback tự động: Nạp từ file CSV thô
+    if not TEDP_CSV.exists() or not WEATHER_CSV.exists():
+        raise FileNotFoundError(f"Không tìm thấy file CSV tại {TEDP_CSV} hoặc {WEATHER_CSV}")
+
     tedp = pd.read_csv(TEDP_CSV, parse_dates=["datetime"])
     weather = pd.read_csv(
         WEATHER_CSV,
@@ -151,6 +261,9 @@ def load_merged():
         parse_dates=["datetime"],
     )
     df = tedp.merge(weather, on=["station_code", "datetime"], how="left", validate="1:1")
+
+    if province_name is not None:
+        df = df[df["province_name"] == province_name].copy()
 
     missing = int(df[WEATHER_COLS].isna().sum().sum())
     if missing:
@@ -345,8 +458,8 @@ def run_province(province_name, model_names=None):
     print(f"TỈNH: {province_name}  (slug: {slug})")
     print("=" * 64)
 
-    # --- Nạp + kiểm tra ngưỡng ---
-    df = load_merged()
+    # --- Nạp + kiểm tra ngưỡng (ưu tiên Silver Parquet Partition Pruning) ---
+    df = load_merged(province_name=province_name, use_parquet=True)
     counts = province_row_counts(df)
     if province_name not in counts.index:
         raise ValueError(f"Không có tỉnh '{province_name}' trong dữ liệu")

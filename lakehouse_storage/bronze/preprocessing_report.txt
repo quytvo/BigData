@@ -6,13 +6,13 @@
   BUOC 1 -- LOAD & KIEM TRA SO BO
 =================================================================
 File      : D:\năm 4\big data\Final_Project_Plan\lakehouse_storage\bronze\tedp_aqi_pm25_hourly.csv
-Shape     : 66,703 hang  x  15 cot
-Columns   : ['province_id', 'province_name', 'station_id', 'station_code', 'station_name', 'latitude', 'longitude', 'datetime', 'pm25', 'aqi', 'pm10', 'no2', 'so2', 'o3', 'co']
+Shape     : 478,926 hang  x  11 cot
+Columns   : ['province_id', 'province_name', 'station_id', 'station_code', 'station_name', 'latitude', 'longitude', 'datetime', 'pm25', 'aqi', 'pm10']
 
 --- Kieu du lieu tho ---
-province_id       object
+province_id          str
 province_name        str
-station_id        object
+station_id           str
 station_code         str
 station_name         str
 latitude         float64
@@ -21,24 +21,16 @@ datetime             str
 pm25             float64
 aqi              float64
 pm10             float64
-no2              float64
-so2              float64
-o3               float64
-co               float64
 
 --- Gia tri null (raw) ---
       null_count  null_%
-pm25        6773   10.15
-aqi          142    0.21
-pm10        7522   11.28
-no2        37748   56.59
-so2        21809   32.70
-o3         29619   44.40
-co         33980   50.94
+pm25       23928    5.00
+aqi         1032    0.22
+pm10       19176    4.00
 
 Tram duy nhat   : 28
 Tinh/thanh      : 1
-Khoang thoi gian: 2026-06-01 00:00:00  ->  2026-09-30 23:00:00
+Khoang thoi gian: 2023-02-16 14:00:00  ->  2026-11-07 23:00:00
 
 =================================================================
   BUOC 2 -- EP KIEU DU LIEU
@@ -52,25 +44,17 @@ Ep kieu hoan tat.
 Loai bo hang datetime null           : -0 hang
 Loai bo duplicate (station+time)     : -0 hang
 
-Shape sau lam sach: (66703, 15)
+Shape sau lam sach: (478926, 11)
 
 =================================================================
   BUOC 4 -- XU LY MISSING VALUES
 =================================================================
-  pm25  : 6773 null -> noi suy 1864 -> con 4909 null (fill bang median tram)
-  pm10  : 7522 null -> noi suy 630 -> con 6892 null (fill bang median tram)
-  no2   : 37748 null -> noi suy 925 -> con 36823 null (fill bang median tram)
-  so2   : 21809 null -> noi suy 2399 -> con 19410 null (fill bang median tram)
-  o3    : 29619 null -> noi suy 632 -> con 28987 null (fill bang median tram)
-  co    : 33980 null -> noi suy 314 -> con 33666 null (fill bang median tram)
-  aqi   : 142 null -> noi suy 83 -> con 59 null (fill bang median tram)
+  pm25  : 23928 null -> noi suy 7197 -> con 16731 null (fill bang median tram)
+  pm10  : 19176 null -> noi suy 3331 -> con 15845 null (fill bang median tram)
+  aqi   : 1032 null -> noi suy 296 -> con 736 null (fill bang median tram)
 
 Null sau xu ly:
-pm25      738
-no2     16562
-so2      5884
-o3       9501
-co      20365
+Series([], )
 
 =================================================================
   BUOC 5 -- COT THOI GIAN PHAI SINH
@@ -82,12 +66,12 @@ Cac cot moi: year, month, day, hour, day_of_week, day_name, is_weekend, date, ti
 =================================================================
 Phan bo muc AQI:
 aqi_category
-Tot           51474
-Trung binh    13579
-Kem            1491
-Xau             151
-Rat xau           8
-Nguy hiem         0
+Tot           281255
+Trung binh    143665
+Kem            36364
+Xau            15749
+Rat xau         1860
+Nguy hiem         33
 
 =================================================================
   BUOC 7 -- CHUAN HOA TEN TRAM / TINH
@@ -98,29 +82,25 @@ Tinh/thanh sau chuan hoa (14):
 =================================================================
   BUOC 8 -- BAO CAO CUOI & LUU FILE
 =================================================================
-Shape cuoi : 66,703 hang  x  34 cot
-Khoang TG  : 2026-06-01 00:00:00  ->  2026-09-30 23:00:00
+Shape cuoi : 478,926 hang  x  29 cot
+Khoang TG  : 2023-02-16 14:00:00  ->  2026-11-07 23:00:00
 Tram       : 28
 Tinh       : 14
 
 --- Thong ke mo ta cac chi so o nhiem ---
-            pm25       pm10        no2        so2         o3         co        aqi
-count  65965.000  66703.000  50141.000  60819.000  57202.000  46338.000  66703.000
-mean      34.314     29.737      7.444      2.537     16.820      9.269     37.022
-std       24.314     17.073      7.454      4.007     17.820     15.013     23.851
-min        0.000      0.000      0.000      0.000      0.044      0.000      0.000
-25%       18.425     17.047      4.045      0.696      7.045      2.857     20.964
-50%       28.632     27.607      6.138      1.122     13.416      5.080     31.898
-75%       44.695     42.719      8.521      2.499     19.446      7.711     48.020
-max      284.501    142.566    149.394    125.540    198.507     80.566    284.501
+             pm25        pm10         aqi
+count  478926.000  478926.000  478926.000
+mean       51.695      40.306      53.606
+std        37.823      22.101      37.207
+min         0.000       0.000       0.000
+25%        25.475      24.220      28.504
+50%        40.858      37.089      43.826
+75%        66.225      52.552      65.860
+max       387.408     311.541     387.408
 
 --- Null con lai ---
-pm25      738
-pm10        0
-no2     16562
-so2      5884
-o3       9501
-co      20365
-aqi         0
+pm25    0
+pm10    0
+aqi     0
 
 File cleaned: D:\năm 4\big data\Final_Project_Plan\lakehouse_storage\bronze\cleaned_tedp.csv

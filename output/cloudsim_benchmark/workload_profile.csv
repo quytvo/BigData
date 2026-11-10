@@ -1,0 +1,15 @@
+﻿task_id,task_name,task_stage,usage_scenario,province_name,n_stations,raw_input_rows,curated_samples,input_size_mb,output_size_mb,preprocess_time_sec,feature_eng_time_sec,total_cpu_time_sec,cloudlet_length_mi,parallel_group
+TASK_MAP_PROV_01,PySpark Prep & Features - Bắc Ninh,MAP_DATA_PREP,PySpark Catalyst Window ETL & 49 đặc trưng theo tỉnh,Bắc Ninh,1,25849,25464,7.888,10.928,18.76,17.45,36.21,905250.0,INDEPENDENT_PROVINCES
+TASK_MAP_PROV_02,PySpark Prep & Features - Gia Lai,MAP_DATA_PREP,PySpark Catalyst Window ETL & 49 đặc trưng theo tỉnh,Gia Lai,1,24702,25464,7.538,10.928,9.42,9.58,19.0,475000.0,INDEPENDENT_PROVINCES
+TASK_MAP_PROV_03,PySpark Prep & Features - HCM,MAP_DATA_PREP,PySpark Catalyst Window ETL & 49 đặc trưng theo tỉnh,HCM,4,101475,25464,30.968,10.928,10.61,10.63,21.24,531000.0,INDEPENDENT_PROVINCES
+TASK_MAP_PROV_04,PySpark Prep & Features - Hà Nội,MAP_DATA_PREP,PySpark Catalyst Window ETL & 49 đặc trưng theo tỉnh,Hà Nội,2,50482,25464,15.406,10.928,8.19,7.91,16.1,402500.0,INDEPENDENT_PROVINCES
+TASK_MAP_PROV_05,PySpark Prep & Features - Hưng Yên,MAP_DATA_PREP,PySpark Catalyst Window ETL & 49 đặc trưng theo tỉnh,Hưng Yên,2,51327,25464,15.664,10.928,6.95,8.4,15.35,383750.0,INDEPENDENT_PROVINCES
+TASK_MAP_PROV_06,PySpark Prep & Features - Hải Phòng,MAP_DATA_PREP,PySpark Catalyst Window ETL & 49 đặc trưng theo tỉnh,Hải Phòng,1,25626,25464,7.82,10.928,6.07,6.1,12.17,304250.0,INDEPENDENT_PROVINCES
+TASK_MAP_PROV_07,PySpark Prep & Features - Lâm Đồng,MAP_DATA_PREP,PySpark Catalyst Window ETL & 49 đặc trưng theo tỉnh,Lâm Đồng,1,25590,25464,7.809,10.928,6.27,6.19,12.46,311500.0,INDEPENDENT_PROVINCES
+TASK_MAP_PROV_08,PySpark Prep & Features - Ninh Bình,MAP_DATA_PREP,PySpark Catalyst Window ETL & 49 đặc trưng theo tỉnh,Ninh Bình,1,24849,25464,7.583,10.928,5.85,6.27,12.12,303000.0,INDEPENDENT_PROVINCES
+TASK_MAP_PROV_09,PySpark Prep & Features - Quảng Ngãi,MAP_DATA_PREP,PySpark Catalyst Window ETL & 49 đặc trưng theo tỉnh,Quảng Ngãi,1,25617,25464,7.818,10.928,5.71,5.85,11.56,289000.0,INDEPENDENT_PROVINCES
+TASK_MAP_PROV_10,PySpark Prep & Features - Tây Ninh,MAP_DATA_PREP,PySpark Catalyst Window ETL & 49 đặc trưng theo tỉnh,Tây Ninh,1,25483,25464,7.777,10.928,5.65,5.66,11.31,282750.0,INDEPENDENT_PROVINCES
+TASK_MAP_PROV_11,PySpark Prep & Features - Đà Nẵng,MAP_DATA_PREP,PySpark Catalyst Window ETL & 49 đặc trưng theo tỉnh,Đà Nẵng,2,51076,25464,15.587,10.928,5.74,6.13,11.87,296750.0,INDEPENDENT_PROVINCES
+ANN_FULL_TRAIN,Huấn luyện toàn bộ (Global ANN Full Train),REDUCE_ANN_FULL_TRAIN,Khi xây dựng hoặc tái huấn luyện mô hình,ALL_11_PROVINCES,11,280104,196064,16.595,12.921,0.0,0.0,89.757,2243924.91,CENTRALIZED_MASTER_NODE
+ANN_WARM_START,Cập nhật mô hình từ checkpoint (Global ANN Warm-Start),REDUCE_ANN_WARM_START,Khi có cơ chế cập nhật định kỳ,ALL_11_PROVINCES,11,45056,45056,2.669,0.496,0.0,0.0,2.0161,50402.93,CENTRALIZED_MASTER_NODE
+ANN_INFERENCE,Sử dụng mô hình để dự báo 24h (Global ANN Inference),REDUCE_ANN_INFERENCE,Trong pipeline dự báo vận hành,ALL_11_PROVINCES,11,1056,275,1.746,0.15,0.0,0.0,0.0361,902.61,CENTRALIZED_MASTER_NODE

@@ -1,28 +1,28 @@
-# 🇻🇳 Distributed Spatio-Temporal Air Quality Forecasting Lakehouse & CloudSim Benchmark: Coupling National In-Situ Monitoring (CEM/TEDP) with Open-Meteo Weather Features
+# Distributed Spatio-Temporal Air Quality Forecasting Lakehouse & CloudSim Benchmark: Coupling National In-Situ Monitoring (CEM/TEDP) with Open-Meteo Weather Features
 
-> **Giải pháp Dữ liệu lớn Hoàn chỉnh (End-to-End Big Data Solution) kết hợp kiến trúc Medallion Parquet Lakehouse (`Bronze – Silver – Gold`), huấn luyện song song 5 họ mô hình Học máy dự báo chỉ số bụi mịn ($I_{\text{PM2.5}}$) trước 24 giờ trên 9 tỉnh/thành phố tại Việt Nam, tích hợp mô phỏng hạ tầng & chi phí đám mây đa cấu hình trên CloudSim và giao diện Bản đồ Dự báo Không gian (Geo-Spatial UI).**
+> **Giải pháp Dữ liệu lớn Hoàn chỉnh (End-to-End Big Data Solution) kết hợp kiến trúc Medallion Lakehouse (`Bronze – Silver – Gold`), mạng nơ-ron không gian - thời gian toàn cục (`Spatio-Temporal Global ANN`) cùng bộ 5 mô hình Học máy đối sánh dự báo chỉ số bụi mịn (`I_PM2.5`) trước 24 giờ trên 11 tỉnh/thành phố (tổng hợp từ 17 trạm quan trắc đạt chuẩn trong gần 3 năm tại Việt Nam), tích hợp luồng dự báo thời gian thực 24h tới, mô phỏng hạ tầng đám mây đa cấu hình trên CloudSim và giao diện Bản đồ Dự báo Không gian (Geo-Spatial UI).**
 
 ---
 
 ## 1. Bối cảnh & Vấn đề Cốt lõi (Problem Statement)
 
-Ô nhiễm bụi mịn ($PM_{2.5}$) tại các trung tâm kinh tế – công nghiệp của Việt Nam (Hà Nội, Bắc Ninh, Hưng Yên, TP.HCM...) diễn biến phức tạp, chịu sự chi phối chặt chẽ của cả hoạt động phát thải nhân sinh lẫn các hiện tượng vi khí hậu cực đoan (nghịch nhiệt bức xạ, gió mùa, trần khí quyển thấp, rửa trôi ướt do mưa).
+Ô nhiễm bụi mịn (`PM2.5`) tại các trung tâm kinh tế – công nghiệp của Việt Nam (Hà Nội, Bắc Ninh, Hưng Yên, Hải Phòng, TP.HCM, Đà Nẵng...) diễn biến phức tạp theo mùa, chịu sự chi phối chặt chẽ của cả hoạt động phát thải nhân sinh lẫn các hiện tượng vi khí hậu cực đoan (nghịch nhiệt bức xạ mùa đông, gió mùa Đông Bắc, trần khí quyển thấp, rửa trôi ướt do mưa).
 
 Tuy nhiên, việc xây dựng hệ thống giám sát và dự báo chất lượng không khí hiện nay gặp phải **3 rào cản kỹ thuật lớn**:
-1. **Thiếu tính dự báo chủ động (Reactive, Not Predictive):** Các hệ thống quan trắc hiện tại chủ yếu hiển thị số liệu quá khứ/tức thời, thiếu khả năng cảnh báo sớm chỉ số $I_{\text{PM2.5}}$ trước 24 giờ để phục vụ điều hành và bảo vệ sức khỏe cộng đồng.
-2. **Nút thắt về bối cảnh vật lý (Physical Blindness):** Dữ liệu từ các trạm quan trắc mặt đất (CEM/TEDP) chỉ cung cấp chỉ số ô nhiễm tại điểm đo, hoàn toàn không đo được các thông số nhiệt động lực học thẳng đứng (độ cao tầng biên khí quyển $PBLH$, độ hụt điểm sương $DPD$, vector gió và lượng mưa tích lũy 24 giờ). Điều này khiến các mô hình chỉ dựa vào chuỗi tự hồi quy bị "mù" trước các đợt biến đổi thời tiết giao mùa.
-3. **Thách thức Hạ tầng Lưu trữ & Dị thể Không gian (Spatial Heterogeneity & Cloud Cost-Performance Trade-offs):** Mỗi địa phương có mật độ trạm và cơ chế vi khí hậu riêng biệt. Việc tổ chức lưu trữ phân vùng hiệu quả (Columnar Partitioned Storage) và lựa chọn cấu hình tài nguyên tính toán đám mây tối ưu về mặt Chi phí – Hiệu năng (Cost-Performance) đòi hỏi đánh giá thực nghiệm bài bản giữa các định dạng lưu trữ (`CSV` vs. `Parquet`) và các cấu hình cụm máy ảo.
+1. **Thiếu tính dự báo chủ động (Reactive, Not Predictive):** Các hệ thống quan trắc hiện tại chủ yếu hiển thị số liệu quá khứ/tức thời, thiếu khả năng cảnh báo sớm chỉ số `I_PM2.5` trước 24 giờ để phục vụ điều hành và bảo vệ sức khỏe cộng đồng.
+2. **Nút thắt về bối cảnh vật lý & tương tác không gian (Physical & Spatial Blindness):** Dữ liệu từ các trạm quan trắc mặt đất (CEM/TEDP) chỉ cung cấp chỉ số ô nhiễm tại điểm đo, hoàn toàn không đo được các thông số nhiệt động lực học thẳng đứng (độ cao tầng biên khí quyển `PBLH`, độ hụt điểm sương `DPD`, vector gió và lượng mưa tích lũy 24 giờ) cũng như sự lan truyền bụi mịn giữa các tỉnh lân cận (ví dụ: hành lang Hà Nội – Bắc Ninh – Hưng Yên – Hải Phòng).
+3. **Thách thức Hạ tầng Lưu trữ & Dị thể Không gian (Spatial Heterogeneity & Cloud Cost-Performance Trade-offs):** Mạng lưới trạm quan trắc phân bố không đồng đều giữa các địa phương và có tỷ lệ khuyết thiếu khác nhau. Việc chuẩn hóa thành các nút không gian cấp tỉnh, tổ chức lưu trữ phân vùng hiệu quả (Columnar Partitioned Storage) và lựa chọn cấu hình tài nguyên đám mây tối ưu về mặt Chi phí – Hiệu năng (Cost-Performance) đòi hỏi đánh giá thực nghiệm bài bản.
 
 ---
 
 ## 2. Mục tiêu Dự án (Project Objectives — Phương án B: Local Pipeline + CloudSim)
 
-* **Xây dựng Kiến trúc Medallion Lakehouse (`Bronze – Silver – Gold`) với Apache Parquet Phân vùng:** Thiết lập quy trình thu nạp tự động, kiểm toán và chuẩn hóa dữ liệu qua 3 tầng vật lý lưu trữ dưới định dạng cột **Apache Parquet (nén Snappy) phân vùng theo tỉnh (`province=...`)**, giúp giảm ~80% dung lượng lưu trữ và tối ưu hóa tốc độ đọc nhờ cơ chế *Partition Pruning* & *Column Projection*.
-* **Tích hợp Đa nguồn Không gian - Thời gian (Spatio-Temporal Data Fusion):** Khớp nối 1-1 chuỗi đo thực tế mặt đất (Ground Truth $Y$ — chỉ số AQI thành phần $I_{\text{PM2.5}}$ từ CEM/TEDP) với 8 biến thời tiết & tầng biên khí quyển theo giờ tại **đúng tọa độ `(latitude, longitude)` của từng trạm** (Features $X$ từ Open-Meteo) theo khóa `(station_code, datetime)`.
-* **Kiểm toán & Chuẩn hóa Chất lượng Dữ liệu Môi trường (Veracity Control):** Chuẩn hóa metadata hành chính; kiểm toán tính nhất quán vật lý theo ngưỡng QCVN; đồng bộ hóa lưới thời gian 120 ngày liên tục (`2.880` giờ/trạm) và bù đắp giờ khuyết ngắn hạn bằng nội suy tuyến tính có gắn cờ truy vết (`*_imputed`, `is_inserted`).
-* **Nghiên cứu Đối sánh Đa thuật toán dưới Dịch chuyển Phân phối Giao mùa (Multi-Model Forecasting Benchmark):** So sánh công bằng 5 thuật toán học máy (`Linear Regression`, `SVR`, `Random Forest`, `XGBoost`, `LightGBM`) với mô hình cơ sở `Persistence 24h`, áp dụng cơ chế *Early Stopping* và *Regularization* công bằng trên tập Validation để dự báo chỉ số $I_{\text{PM2.5}}$ trước 24 giờ cho 9 tỉnh thành.
-* **Mô phỏng Hạ tầng & Chi phí Đám mây Đa cấu hình (CloudSim Resource & Cost Modeling):** Đo đạc thực tế thời gian xử lý CPU (Empirical Workload Profiling) và kích thước dữ liệu (`CSV` vs. `Parquet`) ở quy mô thực tế (`1x`) và mở rộng (`10x`, `50x`), sau đó mô phỏng trên **CloudSim** với $\ge 3$ cấu hình máy ảo đám mây dựa trên bảng giá công khai của Google Cloud (`asia-southeast1`).
-* **Trực quan hóa Bản đồ Dự báo Không gian (Geo-Spatial Forecasting UI):** Kết hợp tọa độ GPS (`latitude`, `longitude`) của 15 trạm / 9 tỉnh thành với kết quả dự báo tầng Gold để hiển thị bản đồ cảnh báo VN_AQI, biểu đồ chuỗi thời gian 5 mô hình, mức độ đóng góp đặc trưng vật lý và báo cáo Benchmark CloudSim.
+* **Xây dựng Kiến trúc Medallion Lakehouse (`Bronze – Silver – Gold`):** Thiết lập quy trình thu nạp tự động có lưu vết phân vùng theo tháng (`tedp_raw_monthly/`), kiểm toán và chuẩn hóa dữ liệu qua 3 tầng vật lý lưu trữ, tối ưu hóa dung lượng và tốc độ truy xuất theo tỉnh.
+* **Đồng bộ Không gian - Thời gian Đa năm & Gộp Nút Cấp Tỉnh (Multi-Year Spatio-Temporal Aggregation):** Lọc chất lượng và độ phủ (`>= 80%`) trên chuỗi dữ liệu gần 3 năm (`11/12/2023 – 07/11/2026`, tương đương `25.512` giờ liên tục/tỉnh), gộp **17 trạm quan trắc thành viên đạt chuẩn thành 11 nút tỉnh/thành phố** (theo phương pháp trung bình các trạm đo thật tương tự chuẩn KnowAir quốc tế) và khớp nối 1-1 với 8 biến khí tượng – tầng biên khí quyển theo giờ từ Open-Meteo ERA5 (`280.632` dòng mỗi nguồn).
+* **Tinh gọn Schema Ô nhiễm & Kiểm toán Chất lượng (Veracity Control):** Loại bỏ các biến khí phụ ít đóng góp (`no2, so2, o3, co`), chuẩn hóa bộ 3 chỉ số cốt lõi (`pm25, pm10, aqi`), lọc ngưỡng vật lý theo QCVN, loại bỏ các ô điền trung vị (`*_median_filled`) trước khi tính trung bình tỉnh, và nội suy tuyến tính có gắn cờ truy vết (`pm25_imputed`, `is_inserted`, `pm25_gap_hours`).
+* **Huấn luyện Mạng Nơ-ron Toàn cục Không gian - Thời gian (`Spatio-Temporal Global ANN`) & Đối sánh Đa mô hình:** Phát triển kiến trúc `SpatioTemporalGlobalANN` tích hợp ma trận tương quan khoảng cách địa lý (`Spatial Prior Matrix` & `Cross-Station Attention`) trên toàn bộ `279.840` mẫu hợp lệ của 11 tỉnh, đồng thời đối sánh với 5 thuật toán học máy (`Linear Regression`, `SVR`, `Random Forest`, `XGBoost`, `LightGBM`) và `Persistence 24h Baseline`.
+* **Phục vụ Dự báo Thời gian thực 24h tới (Real-Time 24h Forecasting Serving):** Xây dựng luồng thu thập dự báo thời tiết 24h tới tại tọa độ thực của 17 trạm thành viên, gộp trung bình theo 11 tỉnh (`fetch_forecast_24h.py`) và suy luận dự báo chỉ số `PM2.5` 24 giờ tiếp theo cho từng tỉnh (`du_bao.py`).
+* **Mô phỏng Hạ tầng & Chi phí Đám mây Đa cấu hình (CloudSim Resource & Cost Modeling):** Đo đạc thực tế thời gian xử lý CPU và kích thước dữ liệu (`CSV` vs. `Parquet`) ở quy mô thực tế (`1x`) và mở rộng (`10x`, `50x`), sau đó mô phỏng trên **CloudSim** với 3 cấu hình máy ảo đám mây dựa trên bảng giá của Google Cloud (`asia-southeast1`).
 
 ---
 
@@ -30,112 +30,111 @@ Tuy nhiên, việc xây dựng hệ thống giám sát và dự báo chất lư�
 
 ```mermaid
 flowchart TD
-    subgraph Sources["1. Data Sources (120 Days: 01/06/2026 - 28/09/2026)"]
-        A1["CEM / TEDP National Monitoring API (28 Stations -> 15 Synced Stations)"]
-        A2["Open-Meteo Historical Forecast API (8 Hourly Weather & PBLH Variables)"]
+    subgraph Sources ["1. Data Sources (Near 3 Years: 11/12/2023 - 07/11/2026 + Real-time 24h)"]
+        A1["CEM / TEDP National Monitoring API (28 Raw Stations -> 17 Filtered Stations / 11 Provinces)"]
+        A2["Open-Meteo ERA5 Archive & Historical Forecast API (8 Hourly Weather & PBLH Variables)"]
+        A3["Open-Meteo 48h Forecast API (Real-time Weather Forecast at 17 Member Stations)"]
     end
 
-    subgraph Lakehouse["2. Local Medallion Lakehouse (lakehouse_storage/)"]
-        B1["Bronze Layer: Immutable Raw CSV/JSON (66,703 Raw Records)"]
-        B2["Silver Layer: Cleaned & 120d Synced Parquet Partitioned by Province (43,200 Rows x 2)"]
-        B3["Gold Layer: Feature Store & Spatial Forecast Mart (31 Features + Lat/Lon + 5 Models)"]
+    subgraph Lakehouse ["2. Local Medallion Lakehouse (lakehouse_storage/ & data_test/)"]
+        B1["Bronze Layer: Monthly Partitions & Raw Pooled CSV (474,286 Raw Records, 3 Core Pollutants)"]
+        B2["Silver Layer: Cleaned & Province-Aggregated Dataset (11 Provinces x 25,512h = 280,632 Rows x 2)"]
+        B3["Gold & Serving Layer: 49 Spatio-Temporal Features, Global ANN Checkpoint & 24h Province Forecasts"]
     end
 
-    subgraph Processing["3. Parallel Spatio-Temporal Processing & ML"]
-        C1["8-Step Data Auditing & Time-Grid Sync (QCVN Bounds, Linear Interpolation)"]
-        C2["Thermodynamic Feature Engineering (Lags, Rolling, Wind Sin/Cos, Vc, DPD, 24h Diffs)"]
-        C3["Per-Province Multi-Model Training Benchmark (Linear Reg, SVR, RF, XGBoost, LightGBM)"]
+    subgraph Processing ["3. Spatio-Temporal Processing & Deep Learning / ML"]
+        C1["Station Auditing & Province Aggregation (Coverage >= 80%, True-Measurement Mean)"]
+        C2["Thermodynamic & Lag Feature Engineering (49 Features: Lags, Rolling, Vc, DPD, 24h Diffs)"]
+        C3["Spatio-Temporal Global ANN (Spatial Prior Attention) & 5-Model Province Benchmark"]
     end
 
-    subgraph Evaluation["4. CloudSim Benchmark & Geo-Spatial UI Serving"]
-        D1["CloudSim Multi-Config Simulator (Config 1: 1 VM vs Config 2: 3 VMs vs Config 3: 9 VMs)"]
-        D2["Interactive Geo-Spatial Forecasting UI (Vietnam Station Map by Lat/Lon & 24h Charts)"]
+    subgraph Evaluation ["4. Real-Time 24h Serving, CloudSim Benchmark & Geo-Spatial UI"]
+        D1["Real-Time 24h Province Forecast Engine (fetch_forecast_24h.py + du_bao.py)"]
+        D2["CloudSim Multi-Config Simulator (Config 1: 1 VM vs Config 2: 3 VMs vs Config 3: 11 VMs)"]
+        D3["Interactive Geo-Spatial Forecasting UI (Vietnam Province Map & 24h Forecast Charts)"]
     end
 
-    A1 & A2 --> B1
-    B1 --> C1 --> B2
+    A1 --> B1 --> C1 --> B2
+    A2 --> B2
     B2 --> C2 --> C3 --> B3
-    B3 --> D1 & D2
+    A3 --> D1
+    B3 --> D1 & D2 & D3
 ```
 
 ---
 
-## 4. Thiết kế Lưu trữ Medallion Parquet & Mô hình hóa Tài nguyên CloudSim
+## 4. Thiết kế Lưu trữ Medallion & Mô hình hóa Tài nguyên CloudSim
 
-Thay vì phụ thuộc vào tài khoản đám mây trả phí hoặc lưu trữ tệp CSV phẳng kém hiệu quả, hệ thống triển khai **Phương án B (Mục 4.2 `docs/context.md`)** kết hợp tối ưu hóa định dạng lưu trữ hướng cột (**Apache Parquet**) với bộ mô phỏng hạ tầng **CloudSim**:
+Hệ thống triển khai **Phương án B (Mục 4.2 `docs/context.md`)** kết hợp kiến trúc lưu trữ Medallion với bộ mô phỏng hạ tầng **CloudSim**:
 
-1. **Tối ưu hóa Lưu trữ Hướng cột & Phân vùng (Columnar Parquet & Hive Partitioning):**
-   - Dữ liệu ở tầng `Silver` và `Gold` được lưu bằng `pyarrow` với thuật toán nén `Snappy` và phân vùng thư mục theo `province=...`.
-   - Khi huấn luyện mô hình cho từng tỉnh hoặc truy vấn dữ liệu trên UI, hệ thống chỉ đọc đúng phân vùng của tỉnh đó (**Partition Pruning**) và chỉ nạp các cột cần thiết vào bộ nhớ (**Column Projection**), giảm ~80% dung lượng đĩa và ~90% lượng dữ liệu quét (Bytes Scanned) so với đọc tệp CSV nguyên khối.
+1. **Tối ưu hóa Lưu trữ Phân vùng (Monthly Checkpoints & Columnar Partitioning):**
+   - Tầng `Bronze` lưu trữ bất biến theo từng phân vùng tháng (`lakehouse_storage/bronze/tedp_raw_monthly/tedp_YYYY-MM.csv`), cho phép cơ chế *Incremental Resume* chỉ tải bổ sung các ngày mới của tháng hiện tại.
+   - Tầng `Silver` và `Gold` chuẩn hóa schema tinh gọn (loại bỏ `no2, so2, o3, co`), hỗ trợ đóng gói sang định dạng cột **Apache Parquet (nén Snappy)** phân vùng theo tỉnh để giảm ~80% dung lượng đĩa và tăng tốc độ đọc I/O nhờ *Partition Pruning* & *Column Projection*.
 2. **Mô hình hóa Tài nguyên & Định giá Đám mây trên CloudSim (Tham chiếu GCP `asia-southeast1`):**
-   - Thời gian xử lý thực tế của từng tỉnh ($T_{\text{local}, i}$) và kích thước dữ liệu thực tế ($S_{\text{CSV}}, S_{\text{Parquet}}$) được đo trực tiếp từ phần cứng cục bộ để quy đổi sang chiều dài tác vụ (**Cloudlet Length tính bằng MI — Million Instructions**).
+   - Thời gian xử lý thực tế và kích thước dữ liệu thực tế được đo trực tiếp từ phần cứng cục bộ để quy đổi sang chiều dài tác vụ (**Cloudlet Length tính bằng MI — Million Instructions**).
    - Mô phỏng và đối sánh **3 Cấu hình Hạ tầng Đám mây (Resource Configurations)**:
-     - **Config 1 (Sequential Small VM — `1 × e2-standard-2`, 2 vCPUs, 8GB RAM, lưu CSV):** Chạy tuần tự 9 tỉnh trên 1 máy ảo nhỏ.
-     - **Config 2 (Balanced Regional Cluster — `3 × e2-standard-4`, 4 vCPUs, 16GB RAM, lưu Parquet phân vùng):** Phân bổ 9 tỉnh vào 3 máy ảo chạy song song theo thuật toán lập lịch *Longest Processing Time First (LPT)* để cân bằng tải giữa các tỉnh nhiều trạm (`TP.HCM`, `Hà Nội`, `Hưng Yên`) và các tỉnh 1 trạm.
-     - **Config 3 (Max-Parallel Cluster — `9 × c2-standard-8`, 8 vCPUs, 32GB RAM):** Mỗi tỉnh chạy trên 1 máy ảo riêng biệt (minh họa quy luật hiệu suất giảm dần do chi phí khởi tạo VM và quy tắc tính phí tối thiểu 60 giây của Google Cloud).
+     - **Config 1 (Sequential Small VM — `1 x e2-standard-2`, 2 vCPUs, 8GB RAM, lưu CSV):** Chạy tuần tự trên 1 máy ảo nhỏ.
+     - **Config 2 (Balanced Regional Cluster — `3 x e2-standard-4`, 4 vCPUs, 16GB RAM, lưu Parquet phân vùng):** Phân bổ 11 tỉnh vào 3 máy ảo chạy song song theo thuật toán lập lịch *Longest Processing Time First (LPT)*.
+     - **Config 3 (Max-Parallel Cluster — `11 x c2-standard-8`, 8 vCPUs, 32GB RAM):** Mỗi tỉnh chạy trên 1 máy ảo riêng biệt (minh họa quy luật hiệu suất giảm dần do chi phí khởi tạo VM 30s và quy tắc tính phí tối thiểu 60 giây của Google Cloud).
 
 ---
 
 ## 5. Bốn Nhóm Đặc trưng Nhiệt động lực học & Biến thiên Khí quyển (Thermodynamic Core)
 
-Hệ thống thu thập đầy đủ **8 biến khí tượng theo giờ** từ Open-Meteo (`temperature_2m`, `relative_humidity_2m`, `dew_point_2m`, `surface_pressure`, `precipitation`, `wind_speed_10m`, `wind_direction_10m`, `boundary_layer_height`) và tính toán trực tiếp các đặc trưng vật lý khí quyển trong pipeline huấn luyện ([code/training/common.py](file:///d:/năm%204/big%20data/Final_Project_Plan/code/training/common.py)):
+Hệ thống thu thập đầy đủ **8 biến khí tượng theo giờ** từ Open-Meteo (`temperature_2m`, `relative_humidity_2m`, `dew_point_2m`, `surface_pressure`, `precipitation`, `wind_speed_10m` tính bằng `m/s`, `wind_direction_10m`, `boundary_layer_height`) và trích xuất các đặc trưng vật lý khí quyển trong pipeline huấn luyện ([`code/training/common.py`](file:///d:/năm%204/big%20data/Final_Project_Plan/code/training/common.py) và [`code/training/train_global_ann.py`](file:///d:/năm%204/big%20data/Final_Project_Plan/code/training/train_global_ann.py)):
 
-* **Động lực học Gió (Wind Vector Dynamics):** Biến đổi hướng gió (`wind_direction_10m`) sang tọa độ lượng giác liên tục ($\sin(\theta), \cos(\theta)$) kết hợp với tốc độ gió (`wind_speed_10m`) để mô hình hóa hướng thổi (phân biệt gió mùa Đông Nam ẩm sạch và gió Đông Bắc khô mang bụi) cùng khả năng khuếch tán ngang.
-* **Dung tích Thông gió Khí quyển (Ventilation Coefficient - $V_c$):** Tích số giữa tốc độ gió và độ cao tầng biên khí quyển ($V_c = \text{WS}_{10\text{m}} \times \text{PBLH}$), định lượng khả năng tự pha loãng ô nhiễm theo phương thẳng đứng và phương ngang.
-* **Độ ẩm, Điểm sương & Rửa trôi Ướt (Moisture & Precipitation Scavenging):** Tính độ hụt điểm sương ($\text{DPD} = T_{2\text{m}} - T_d$) phản ánh mức độ bão hòa hơi nước thúc đẩy ngưng tụ hạt aerosol, cùng tổng lượng mưa tích lũy trong suốt 24 giờ qua (`precip_sum_24h` — đặc trưng đứng **Top 2 Feature Importance** tại Hà Nội và Hưng Yên) mô tả quá trình rửa trôi ướt bầu khí quyển.
-* **Động lực Biến thiên Thời tiết 24 giờ ($\Delta_{24\text{h}}$ Weather Dynamics):** Độ chênh lệch nhiệt độ (`temp_diff_24h`), áp suất bề mặt (`pressure_diff_24h`) và độ cao tầng biên (`pblh_diff_24h`) trong 24 giờ qua, giúp mô hình nhận diện các rãnh áp thấp hoặc sóng lạnh đầu thu đang hình thành mà không gây rò rỉ dữ liệu tương lai (Zero Data Leakage).
+* **Động lực học Gió (Wind Vector Dynamics):** Biến đổi hướng gió (`wind_direction_10m`) sang tọa độ lượng giác liên tục (`wind_dir_sin`, `wind_dir_cos`) kết hợp với tốc độ gió (`wind_speed_10m` đơn vị `m/s`) để mô hình hóa hướng thổi (phân biệt gió mùa Đông Bắc khô mang bụi và gió biển ẩm sạch) cùng khả năng khuếch tán ngang.
+* **Dung tích Thông gió Khí quyển (Ventilation Coefficient - `Vc`):** Tích số giữa tốc độ gió và độ cao tầng biên khí quyển (`ventilation_coef = wind_speed_10m * boundary_layer_height`), định lượng khả năng tự pha loãng ô nhiễm theo phương thẳng đứng và phương ngang.
+* **Độ ẩm, Điểm sương & Rửa trôi Ướt (Moisture & Precipitation Scavenging):** Tính độ hụt điểm sương (`dew_point_deficit = temperature_2m - dew_point_2m`) phản ánh mức độ bão hòa hơi nước thúc đẩy ngưng tụ hạt aerosol, cùng tổng lượng mưa tích lũy trong suốt 24 giờ (`precip_sum_24h`) mô tả quá trình rửa trôi ướt bầu khí quyển.
+* **Động lực Biến thiên Thời tiết 24 giờ (`24h Weather Dynamics`):** Độ chênh lệch nhiệt độ (`temp_diff_24h`), áp suất bề mặt (`pressure_diff_24h`) và độ cao tầng biên (`pblh_diff_24h`) giữa thời điểm dự báo `t+24h` và hiện tại `t`, giúp mô hình nhận diện các đợt không khí lạnh hoặc nghịch nhiệt đang hình thành mà không gây rò rỉ dữ liệu tương lai (Zero Data Leakage).
 
 ---
 
 ## 6. Ánh xạ Tiêu chí 5V của Big Data
 
-| Chữ "V" | Hiện thực hóa trong dự án (Phương án B: Local Lakehouse + CloudSim) |
+| Chữ "V" | Hiện thực hóa trong dự án (Phương án B: Local Lakehouse + Global ANN + CloudSim) |
 | :--- | :--- |
-| **Volume** | Thu thập `66.703` bản ghi thô từ 28 trạm quan trắc CEM/TEDP trong 4 tháng (`06/2026 – 09/2026`); chuẩn hóa thành bộ dữ liệu đối sánh 120 ngày (`43.200` dòng × 2 nguồn = `86.400` bản ghi đồng bộ 100%), kèm thực nghiệm mở rộng quy mô (`1x`, `10x`, `50x` tương đương `13,14 triệu` dòng) trong mô phỏng CloudSim. |
-| **Velocity** | Luồng Ingestion thu nạp chuỗi dữ liệu theo giờ (hourly batch) từ REST API của CEM/TEDP và Open-Meteo với cơ chế chia chunk thời gian và retry tự động; đánh giá thời gian lập lịch thực thi song song trên nhiều cấu hình VM. |
-| **Variety** | Kết hợp dữ liệu quan trắc môi trường mặt đất (7 thông số AQI thành phần: $I_{\text{PM2.5}}, I_{\text{PM10}}, I_{\text{NO2}}, I_{\text{SO2}}, I_{\text{O3}}, I_{\text{CO}}, \text{AQI}$), 8 biến khí tượng – tầng biên khí quyển từ mô hình số trị Open-Meteo và dữ liệu tọa độ không gian GPS (`latitude`, `longitude`, `elevation`). |
-| **Veracity** | Pipeline kiểm toán 8 bước: chuẩn hóa định danh tỉnh/trạm, lọc ngưỡng vật lý theo QCVN, nội suy tuyến tính có giới hạn ($\le 3$h) và gắn cờ truy vết minh bạch (`*_imputed`, `is_inserted`). |
-| **Value** | Hệ thống dự báo sớm chỉ số $I_{\text{PM2.5}}$ trước 24 giờ vượt Baseline tại 8/9 tỉnh/thành phố đại diện cả 3 miền Bắc – Trung – Nam và Tây Nguyên, tích hợp lên giao diện UI Bản đồ tương tác và cung cấp mô hình tối ưu hóa chi phí đám mây. |
+| **Volume** | Thu thập `474.286` bản ghi thô từ 28 trạm quan trắc CEM/TEDP trong gần 3 năm (`2023 – 2026`); chuẩn hóa và gộp thành bộ dữ liệu cấp tỉnh `280.632` dòng × 2 nguồn = `561.264` bản ghi đồng bộ 100% (`11 tỉnh x 25.512 giờ`), kèm thực nghiệm mở rộng quy mô (`1x`, `10x`, `50x` tương đương `14 triệu` dòng) trên CloudSim. |
+| **Velocity** | Luồng Ingestion thu nạp chuỗi dữ liệu theo giờ (hourly batch) với cơ chế checkpoint theo tháng (`tedp_raw_monthly/`) và luồng thu thập dự báo thời tiết 24h thời gian thực (`fetch_forecast_24h.py`) phục vụ suy luận tức thời (`du_bao.py`). |
+| **Variety** | Kết hợp dữ liệu quan trắc môi trường mặt đất (3 chỉ số cốt lõi: `pm25`, `pm10`, `aqi`), 8 biến khí tượng – tầng biên khí quyển từ mô hình tái phân tích ERA5 / dự báo số trị Open-Meteo và dữ liệu tọa độ không gian GPS (`latitude`, `longitude`, `elevation`). |
+| **Veracity** | Pipeline kiểm toán đa tầng: chuẩn hóa định danh chuỗi 29 chữ số, lọc ngưỡng vật lý QCVN, loại bỏ ô fill trung vị giả tạo trước khi lấy trung bình tỉnh, lọc tỉnh đạt độ phủ đo thật `>= 80%`, nội suy tuyến tính và gắn cờ truy vết (`pm25_imputed`, `is_inserted`, `pm25_gap_hours`). |
+| **Value** | Mô hình `Spatio-Temporal Global ANN` dự báo sớm chỉ số `I_PM2.5` trước 24 giờ **vượt Baseline tại 11/11 tỉnh/thành phố** (giảm `16.50%` RMSE toàn cục trên tập Test: từ `21.17` xuống `17.68`), xuất trực tiếp dự báo 24h tới cho từng tỉnh tại `data_test/du_bao/`. |
 
 ---
 
 ## 7. Sản phẩm Đầu ra của Dự án (Deliverables)
 
-1. **Kiểm toán Chất lượng Dữ liệu Môi trường (`preprocessing_report.txt`):** Báo cáo đánh giá tỷ lệ sai lệch metadata, lọc ngưỡng vật lý QCVN và thống kê nội suy trên mạng lưới quan trắc CEM/TEDP.
-2. **Local Medallion Lakehouse (`lakehouse_storage/{bronze,silver,gold}/`):** Kho dữ liệu phân tầng định dạng Apache Parquet (nén Snappy) phân vùng theo tỉnh (`province=...`), tích hợp bảng `gold/spatial_forecasts.parquet` gắn tọa độ `(latitude, longitude)` cho từng trạm.
-3. **Bộ Mô hình & Kết quả Đối sánh 5 Thuật toán (`output/province_models/`):** Мо hình đã huấn luyện (`model.joblib`), dự báo chi tiết (`predictions.csv`), mức độ đóng góp đặc trưng (`feature_importance.csv`) và bảng chỉ số đánh giá (`metrics.json`: $RMSE, MAE, R^2$) trên toàn bộ 9 tỉnh thành.
-4. **Báo cáo Đo kiểm Lưu trữ & Mô phỏng Đám mây CloudSim (`output/cloudsim_benchmark/`):** Kết quả thực nghiệm so sánh `CSV` vs. `Parquet` và bảng đánh giá `Execution Time`, `Speedup`, `Simulated Cost` giữa 3 cấu hình máy ảo đám mây ở các quy mô `1x – 10x – 50x`.
-5. **Ứng dụng UI Bản đồ Dự báo Không gian (`code/ui/app_dashboard.py`):** Giao diện trực quan hóa bản đồ cảnh báo VN_AQI theo tọa độ trạm, đối sánh chuỗi thời gian dự báo 24h của 5 mô hình và hiển thị bảng phân tích hiệu năng/chi phí CloudSim.
+1. **Báo cáo Kiểm toán & Độ phủ Dữ liệu (`preprocessing_report.txt`, `province_coverage_4y.csv`, `province_station_members_4y.csv`):** Báo cáo kiểm định chất lượng dữ liệu cấp trạm, bảng độ phủ 14 tỉnh thô và danh sách 17 trạm thành viên thuộc 11 tỉnh đạt chuẩn.
+2. **Kho Dữ liệu Medallion Lakehouse (`lakehouse_storage/` & `data_test/`):** Bao gồm phân vùng tháng tầng Bronze (`474.286` dòng) và cặp dữ liệu chuẩn hóa tầng Silver (`cleaned_tedp_province_4y.csv` & `weather_openmeteo_province_4y.csv`, mỗi file `280.632` dòng).
+3. **Mô hình Mạng Nơ-ron Toàn cục (`output/global_ann_4y/`):** Trọng số tối ưu `best_ann_model.pt`, bảng dự báo `predictions.csv`, phân tích đóng góp đặc trưng `feature_importance_pct.csv`, ma trận chú ý không gian giữa 11 tỉnh `province_attention_matrix_pct.csv` và chỉ số đánh giá `metrics.json`.
+4. **Pipeline Dự báo Thời gian thực 24h tới (`data_test/du_bao/`):** File tổng hợp dự báo thời tiết 24h của 11 tỉnh (`openmeteo_forecast_next_24h_11provinces.csv`) và các file kết quả dự báo `PM2.5` chi tiết từng giờ cho từng tỉnh (`ha_noi.csv`, `hcm.csv`...).
+5. **Tài liệu Kiến trúc & Quy trình End-to-End (`docs/`):** Bao gồm `project_overview.md`, `pipeline_detail.md`, `overview.md`, `preprocessing_data_normalization_plan.md` và `task_breakdown_schedule.md`.
 
 ---
 
 ## 8. Phạm vi Dữ liệu & Pipeline Thực thi Hiện tại
 
-### 8.1. Phạm vi dữ liệu đã chốt (Cập nhật 4 tháng / 120 ngày)
+### 8.1. Phạm vi dữ liệu đã chốt (Gần 3 năm: 11/12/2023 – 07/11/2026)
 
-| Hạng mục | Giá trị |
+| Hạng mục | Giá trị thực tế trong dự án |
 | :--- | :--- |
-| **Dữ liệu thô thu thập (Bronze)** | **66.703 dòng** từ **28 trạm / 14 tỉnh thành** (`2026-06-01 00:00` → `2026-09-30 23:00`) |
-| **Cửa sổ đồng bộ chuẩn (Silver/Gold)** | **120 ngày**: `2026-06-01 00:00` → `2026-09-28 23:00` (**2.880 giờ/trạm**) |
-| **Số trạm / province đạt chuẩn 120 ngày** | **15 trạm / 9 province** (`HCM`, `Hà Nội`, `Đà Nẵng`, `Hưng Yên`, `Bắc Ninh`, `Lâm Đồng`, `Ninh Bình`, `Quảng Ngãi`, `Tây Ninh`) |
-| **Tổng bản ghi đồng bộ** | **43.200 dòng** mỗi nguồn (TEDP 35 cột và Open-Meteo 18 cột), khớp 1-1 tuyệt đối (100%) theo `(station_code, datetime)` |
-| **Đơn vị biến mục tiêu (`pm25`)** | **Chỉ số AQI thành phần của $\text{PM}_{2.5}$ ($I_{\text{PM2.5}}$ theo chuẩn VN_AQI)** từ endpoint `/api/aqi_hour` của TEDP |
+| **Dữ liệu thô thu thập (Bronze)** | **474.286 dòng** từ **28 trạm / 14 tỉnh thành** (`2023-02-16 14:00` -> `2026-11-07 23:00`) |
+| **Cửa sổ đồng bộ chuẩn cấp tỉnh (Silver)** | **Gần 3 năm (1.063 ngày = 2,91 năm)**: `2023-12-11 00:00` -> `2026-11-07 23:00` (**25.512 giờ liên tục/tỉnh**) |
+| **Số tỉnh / trạm thành viên vượt bộ lọc** | **11 tỉnh / 17 trạm thành viên** (`HCM` 4 trạm, `Hà Nội` 2 trạm, `Hưng Yên` 2 trạm, `Đà Nẵng` 2 trạm; `Bắc Ninh`, `Gia Lai`, `Hải Phòng`, `Lâm Đồng`, `Ninh Bình`, `Quảng Ngãi`, `Tây Ninh` mỗi tỉnh 1 trạm) |
+| **Tổng bản ghi đồng bộ cấp tỉnh** | **280.632 dòng** mỗi nguồn (TEDP 30 cột và Open-Meteo 19 cột), khớp 1-1 tuyệt đối (100%) theo `(station_code, datetime)` |
+| **Các chỉ số ô nhiễm giữ lại** | **3 chỉ số cốt lõi:** `pm25`, `pm10`, `aqi` (đã loại bỏ `no2, so2, o3, co`) |
+| **Đơn vị biến mục tiêu (`pm25`)** | **Chỉ số AQI thành phần của PM2.5 (`I_PM2.5`, thang điểm 0–500 không thứ nguyên theo QĐ 1459/QĐ-TCMT)** lấy từ trường `PM205` của endpoint `/api/aqi_hour` |
 
-### 8.2. Các script trong Pipeline
+### 8.2. Các script trong Pipeline End-to-End
 
 | Bước | Script | Đầu vào | Đầu ra |
 | :--- | :--- | :--- | :--- |
-| 1. Crawl dữ liệu TEDP 4 tháng | [code/crawl_data/test2.py](file:///d:/năm%204/big%20data/Final_Project_Plan/code/crawl_data/test2.py) | REST API `https://tedp.vn/api` | `lakehouse_storage/bronze/tedp_aqi_pm25_hourly.csv` (66.703 dòng) |
-| 2. Tiền xử lý & Kiểm toán 8 bước | [code/crawl_data/preprocess_tedp.py](file:///d:/năm%204/big%20data/Final_Project_Plan/code/crawl_data/preprocess_tedp.py) | `lakehouse_storage/bronze/tedp_aqi_pm25_hourly.csv` | `lakehouse_storage/bronze/cleaned_tedp.csv` + `preprocessing_report.txt` |
-| 3. Đồng bộ lưới 120 ngày | [code/crawl_data/sync_tedp_120days.py](file:///d:/năm%204/big%20data/Final_Project_Plan/code/crawl_data/sync_tedp_120days.py) | `lakehouse_storage/bronze/cleaned_tedp.csv` | `data_test/cleaned_tedp_synced_120d.csv` (43.200 dòng × 35 cột) |
-| 4. Tải 8 biến thời tiết theo trạm | [code/crawl_data/fetch_openmeteo_weather.py](file:///d:/năm%204/big%20data/Final_Project_Plan/code/crawl_data/fetch_openmeteo_weather.py) | `data_test/cleaned_tedp_synced_120d.csv` | `data_test/weather_openmeteo_station_120d.csv` (43.200 dòng × 18 cột) |
-| 5. Huấn luyện & Đánh giá 5 models | [code/training/run_all.py](file:///d:/năm%204/big%20data/Final_Project_Plan/code/training/run_all.py) | 2 file `120d` trong `data_test/` | `output/province_models/<tinh>/metrics.json`, `predictions.csv` |
-
-### 8.3. Data Contract giữa các tầng dữ liệu
-
-- **Tầng Silver — TEDP Ground Truth (`43.200` dòng × 35 cột):** Khóa chính `(station_code, datetime)`, tọa độ `(latitude, longitude)`, 7 chỉ số ô nhiễm (`pm25, aqi, pm10, no2, so2, o3, co`) và 8 cột cờ kiểm toán (`*_imputed`, `is_inserted`).
-- **Tầng Silver — Open-Meteo Weather (`43.200` dòng × 18 cột):** Khóa chính `(station_code, datetime)`, tọa độ trạm và ô lưới, độ cao `elevation`, và 8 biến khí tượng (`temperature_2m`, `relative_humidity_2m`, `dew_point_2m`, `surface_pressure`, `precipitation`, `wind_speed_10m`, `wind_direction_10m`, `boundary_layer_height`).
-- **Tầng Gold — Spatial Forecast Mart (`spatial_forecasts.parquet`):** Kết hợp `province_name, region, station_code, station_name, latitude, longitude, elevation, origin_time, target_time` với giá trị thực `y_true`, `y_baseline` và dự báo của 5 mô hình ML (`y_linear_regression, y_svr, y_random_forest, y_xgboost, y_lightgbm`) cùng phân loại màu cảnh báo `vn_aqi_category`.
+| 1. Crawl dữ liệu CEM/TEDP (có checkpoint tháng) | [`code/crawl_data/test2.py`](file:///d:/năm%204/big%20data/Final_Project_Plan/code/crawl_data/test2.py) | REST API `https://tedp.vn/api` | `lakehouse_storage/bronze/tedp_raw_monthly/*.csv` & `tedp_aqi_pm25_hourly.csv` |
+| 2. Tiền xử lý cấp trạm & Tự động gộp trung bình tỉnh | [`code/crawl_data/preprocess_tedp.py`](file:///d:/năm%204/big%20data/Final_Project_Plan/code/crawl_data/preprocess_tedp.py) & [`sync_tedp_province.py`](file:///d:/năm%204/big%20data/Final_Project_Plan/code/crawl_data/sync_tedp_province.py) | `lakehouse_storage/bronze/tedp_aqi_pm25_hourly.csv` | `cleaned_tedp.csv`, `data_test/cleaned_tedp_province_4y.csv` (280.632 dòng × 30 cột), `province_station_members_4y.csv` |
+| 3. Đồng bộ 8 biến thời tiết lịch sử ERA5 cấp tỉnh | [`code/crawl_data/fetch_openmeteo_weather.py`](file:///d:/năm%204/big%20data/Final_Project_Plan/code/crawl_data/fetch_openmeteo_weather.py) | `data_test/cleaned_tedp_province_4y.csv` | `data_test/weather_openmeteo_province_4y.csv` (280.632 dòng × 19 cột) |
+| 4. Đào dự báo thời tiết 24h tới theo 17 trạm & gộp 11 tỉnh | [`code/crawl_data/fetch_forecast_24h.py`](file:///d:/năm%204/big%20data/Final_Project_Plan/code/crawl_data/fetch_forecast_24h.py) | `data_test/province_station_members_4y.csv` + Open-Meteo Forecast API | `data_test/du_bao/openmeteo_forecast_next_24h_11provinces.csv` (1 file CSV tổng hợp duy nhất) |
+| 5. Huấn luyện mô hình Spatio-Temporal Global ANN | [`code/training/train_global_ann.py`](file:///d:/năm%204/big%20data/Final_Project_Plan/code/training/train_global_ann.py) | 2 file `province_4y.csv` trong `data_test/` | `output/global_ann_4y/best_ann_model.pt`, `metrics.json`, `predictions.csv` |
+| 6. Suy luận dự báo PM2.5 24h tới cho từng tỉnh | [`code/training/du_bao.py`](file:///d:/năm%204/big%20data/Final_Project_Plan/code/training/du_bao.py) | `best_ann_model.pt` + Lịch sử 72h + File thời tiết 24h | `data_test/du_bao/ten_tinh.csv` (ví dụ: `ha_noi.csv`, `hcm.csv`) |
 
 ---
 
@@ -145,29 +144,16 @@ Hệ thống thu thập đầy đủ **8 biến khí tượng theo giờ** từ 
 
 | Quyết định kỹ thuật | Lý do lựa chọn (Why?) | Phương án thay thế bị loại | Đánh đổi kỹ thuật (Trade-off) |
 | :--- | :--- | :--- | :--- |
-| **Phương án B: Local Pipeline + CloudSim** | Tuân thủ Mục 4.2 của `docs/context.md`, chi phí `$0`, không bị giới hạn Quota 8 vCPU khi thử nghiệm cụm 9 VMs, an toàn tuyệt đối khi demo trực tiếp. | Triển khai trực tiếp trên GCP trả phí (Phương án A) | Không dùng giao diện GCP Console thật, nhưng thực nghiệm đối sánh được nhiều cấu hình hạ tầng và quy mô dữ liệu (`1x, 10x, 50x`) sâu sắc hơn. |
-| **Apache Parquet (Snappy) + Hive Partitioning (`province=...`)** | Định dạng hướng cột giúp nén giảm ~80% dung lượng so với CSV, hỗ trợ *Partition Pruning* và *Column Projection* giảm ~90% dữ liệu quét khi train theo tỉnh. | Lưu trữ phẳng bằng tệp CSV hoặc JSON | Cần bước chuyển đổi sang Parquet ở tầng Silver, nhưng tăng tốc độ đọc I/O gấp nhiều lần và giảm mạnh chi phí lưu trữ/băng thông đám mây. |
-| **Huấn luyện độc lập theo tỉnh (Per-Province Partitioned Training)** | Phù hợp với bản chất *Embarrassingly Parallel* (không tốn băng thông trộn dữ liệu liên máy chủ) và nắm bắt đặc thù vi khí hậu từng vùng. | Gom toàn bộ vào 1 mô hình đơn lẻ (Single Global Model) | Các tỉnh chỉ có 1 trạm (`2.880` dòng) có ít mẫu hơn các tỉnh lớn, đòi hỏi kiểm soát quá khớp bằng *Early Stopping* và đối sánh với `Linear Regression`. |
-| **Streamlit + Plotly Geo-Spatial UI** | Xây dựng bằng 100% Python, hỗ trợ bản đồ tọa độ tương tác và biểu đồ chuỗi thời gian đa mô hình trực quan cho buổi bảo vệ 15 phút. | Web Full-stack (React/FastAPI) hoặc Looker Studio | Tiết kiệm 90% thời gian làm giao diện để tập trung vào chất lượng mô hình, mô phỏng CloudSim và báo cáo học thuật. |
+| **Gộp trạm thành nút cấp tỉnh (17 trạm -> 11 tỉnh)** | Đồng nhất với chuẩn nghiên cứu quốc tế (KnowAir), giảm nhiễu cục bộ khi 1 trạm bảo trì ngắn hạn, giữ được chuỗi liên tục gần 3 năm (`25.512` giờ) với độ phủ `>= 80%`. | Giữ nguyên từng trạm rời rạc với yêu cầu đủ 100% số ngày | Mất chi tiết vi mô nội đô giữa các quận, nhưng tăng mạnh tính liên tục dài hạn (từ 120 ngày lên gần 3 năm) và độ ổn định khi học sâu. |
+| **Loại bỏ `no2, so2, o3, co`, chỉ giữ `pm25, pm10, aqi`** | Các khí phụ có tỷ lệ khuyết thiếu cao tại nhiều trạm tỉnh và không đóng góp vào dự báo `PM2.5` tại `t+24h`. Loại bỏ giúp giảm dung lượng lưu trữ và tránh nhiễu nội suy. | Giữ toàn bộ 7 chỉ số ô nhiễm | Không phục vụ bài toán dự báo đa chất khí, nhưng tối ưu hóa hoàn toàn độ sạch dữ liệu và tốc độ xử lý cho bài toán trọng tâm `PM2.5`. |
+| **Đào dự báo thời tiết 24h theo tọa độ 17 trạm rồi lấy trung bình tỉnh** | Đảm bảo tính nhất quán tuyệt đối (Data Consistency) giữa cách tổng hợp dữ liệu ô nhiễm cấp tỉnh (`sync_tedp_province.py`) và dữ liệu thời tiết dự báo đầu vào (`fetch_forecast_24h.py`). | Chỉ gọi API dự báo tại 1 điểm tọa độ trung bình tỉnh | Tốn 17 request thay vì 11 request mỗi lần lấy dự báo (~15 giây), nhưng phản ánh chính xác vi khí hậu tại đúng vị trí đặt các trạm quan trắc thành viên. |
+| **Mô hình `Spatio-Temporal Global ANN` có Spatial Attention** | Học chung trên toàn bộ `279.840` mẫu của 11 tỉnh, khai thác tương quan không gian giữa các tỉnh lân cận và đạt kết quả vượt Baseline ở cả `11/11` tỉnh (`+16.50%` RMSE). | Chỉ huấn luyện mô hình cây độc lập trên từng tỉnh nhỏ | Cần chuẩn hóa Z-score và thiết kế kiến trúc mạng phức tạp hơn, nhưng khắc phục triệt để hiện tượng quá khớp (overfitting) ở các tỉnh 1 trạm. |
 
 ### 9.2. Quản trị Rủi ro Kỹ thuật (Risk Register)
 
 | Mã | Rủi ro | Mức ảnh hưởng | Giải pháp phòng ngừa (Mitigation) | Phụ trách |
 | :---: | :--- | :---: | :--- | :---: |
-| **R-01** | Giám khảo chất vấn việc chạy Local có thể hiện rõ tính chất Cloud/Big Data hay không | High | Lưu trữ chuẩn **Medallion Partitioned Parquet**, đo kiểm thực tế `CSV` vs `Parquet` và mô phỏng 3 cấu hình cụm VM ở quy mô `1x - 10x - 50x` trên **CloudSim** theo đúng Mục 4.2 đề bài. | Hiếu |
-| **R-02** | Mô phỏng CloudSim quá đơn giản (chỉ chia tuyến tính theo CPU mà quên độ trễ mạng/I/O) | High | Đưa vào công thức mô phỏng đầy đủ: `VM Boot Time` + `Network Transfer Time (Data Size / Bandwidth)` + `Quy tắc tính phí tối thiểu 60s của GCP`. | Hiếu |
-| **R-03** | Giải thích chưa chặt chẽ việc mỗi tỉnh có mô hình thắng khác nhau (nguy cơ bị coi là chọn số đẹp trên tập Test) | High | Định vị rõ đây là **Multi-Model Empirical Benchmark**: phân tích dựa trên `Feature Importance` (quán tính chu kỳ 24h vs cú sốc thời tiết) và mật độ mẫu (tỉnh nhiều trạm vs tỉnh 1 trạm). | Bảo |
-| **R-04** | Lỗi mạng hoặc môi trường khi Demo trực tiếp trong 15 phút bảo vệ | Critical | Đóng gói sẵn toàn bộ tầng `Gold` (Parquet/CSV) trên ổ đĩa cục bộ để UI Bản đồ đọc trực tiếp với độ trễ dưới 0.2 giây. | Quý |
-
----
-
-## 10. Lưu ý Học thuật & Chiến lược Đánh giá Khả năng Co giãn (Big Data Scalability Note)
-
-> **[NOTE — Giải trình Quy mô Dữ liệu, Mô hình hóa & Mô phỏng CloudSim cho Hội đồng]**
-> 1. **Về tập dữ liệu thực tế (Real-world Anchor Dataset):** Mạng lưới trạm quan trắc không khí tự động công khai của Cục Kiểm soát ô nhiễm môi trường (CEM/TEDP) trên toàn lãnh thổ Việt Nam hiện có **28 trạm hoạt động**. Việc thu thập trọn vẹn 4 tháng liên tục (`66.703` bản ghi thô $\rightarrow$ `43.200` bản ghi đồng bộ sạch 99.82% ghép với `43.200` bản ghi khí tượng 8 biến) phản ánh đúng **100% quy mô dữ liệu thực tế hiện có của quốc gia** ở độ phân giải theo giờ.
-> 2. **Về ý nghĩa khoa học của Đối sánh Đa mô hình theo Tỉnh (Multi-Model Empirical Benchmark):**
->    * Việc huấn luyện 5 họ thuật toán (`Linear Regression`, `SVR`, `Random Forest`, `XGBoost`, `LightGBM`) trên từng tỉnh không nhằm mục đích chọn số đẹp trên tập Test (*Test-set cherry-picking*), mà để kiểm chứng sự đánh đổi giữa **Khả năng học tương tác khí tượng phi tuyến (Tree-based)** và **Khả năng ngoại suy tuyến tính bền vững khi ít mẫu (Linear Regression)**.
->    * Thực nghiệm chứng minh: Tại các tỉnh có mật độ trạm cao ($\ge 2$ trạm) và biến động thời tiết mạnh (`Hà Nội`, `Hưng Yên`, `Ninh Bình`, `Đà Nẵng`), `LightGBM` và `XGBoost` vượt trội hoàn toàn nhờ khai thác các ngưỡng mưa rửa trôi 24h (`precip_sum_24h`), biến thiên áp suất (`pressure_diff_24h`) và hướng gió (`wind_dir_cos`). Ngược lại, tại các tỉnh chỉ có 1 trạm đơn lẻ (`2.880` mẫu) chịu hiện tượng trôi phân phối giao mùa hoặc quán tính chu kỳ ngày đêm lớn (`Lâm Đồng`, `Quảng Ngãi`, `Bắc Ninh`, `TP.HCM`), `Linear Regression` thể hiện độ bền vững ngoại suy cao nhất.
-> 3. **Về đánh giá khả năng mở rộng bằng CloudSim (CloudSim Multi-Config Benchmarking):**
->    * Thiết kế lưu trữ phân vùng (`province=...`) và huấn luyện độc lập theo tỉnh có bản chất **Embarrassingly Parallel** (không phát sinh chi phí trộn dữ liệu qua mạng giữa các nút).
->    * Dựa trên thông số thời gian CPU thực tế và tỷ lệ nén Parquet thực tế đo từ bộ dữ liệu 4 tháng (`1x`), hệ thống mô phỏng trên **CloudSim** các kịch bản mở rộng mạng lưới cảm biến IoT quốc gia (`10x` = 150 trạm × 1 năm; `50x` = 500 trạm × 3 năm ≈ `13,14 triệu` dòng) trên 3 cấu hình máy ảo đám mây khác nhau để chứng minh định luật Amdahl và tìm ra điểm tối ưu chi phí – hiệu năng.
+| **R-01** | Mở và lưu file CSV bằng Excel làm hỏng mã `station_id` / `province_id` 29 chữ số thành số mũ khoa học (`2.84E+28`) | Critical | Ép kiểu `dtype={"province_id": str, "station_id": str, "station_code": str}` trong toàn bộ script Python và khôi phục trực tiếp từ phân vùng gốc `tedp_raw_monthly/`. | Quý |
+| **R-02** | Chạy lẻ tẻ bước tiền xử lý mà không chạy đồng bộ pipeline khiến lệch ngày kết thúc giữa file TEDP và file Weather lịch sử | High | Thiết lập quy trình chuẩn 5 bước End-to-End (`test2.py -> preprocess_tedp.py -> fetch_openmeteo_weather.py -> fetch_forecast_24h.py -> du_bao.py`) trong `docs/pipeline_detail.md`. | Bảo |
+| **R-03** | Trạm lắp đặt muộn trong tỉnh nhiều trạm làm nhảy bậc giá trị trung bình tỉnh | High | Bộ lọc `filter_stations` trong `sync_tedp_province.py` tự động loại các trạm lắp muộn có độ phủ `< 80%` nếu tỉnh đó đã có trạm dài hạn đạt chuẩn. | Quý |
+| **R-04** | Hiểu nhầm đơn vị `pm25` từ CEM là nồng độ `ug/m3` thay vì chỉ số AQI thành phần `I_PM2.5` | Medium | Ghi rõ trong báo cáo và tài liệu kỹ thuật: trường `PM205` từ `/api/aqi_hour` là chỉ số phụ `I_PM2.5` (thang 0–500 theo QĐ 1459/QĐ-TCMT). | Dương |

@@ -5,3 +5,8 @@ previous_projects/
 
 __pycache__/
 *.pyc
+.tests/
+/data_test/weather_openmeteo_province_4y.csv
+/data_test/cleaned_tedp_province_4y.csv
+/lakehouse_storage/bronze/tedp_aqi_pm25_hourly.csv
+/lakehouse_storage/bronze/cleaned_tedp.csv

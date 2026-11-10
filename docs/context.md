@@ -320,3 +320,24 @@ ANALYTICS / ALGORITHM
 RESULT
      ↓
 EVALUATION
+```
+
+---
+
+# 10. Current Project Selection & Implementation Status (Updated 08/11/2026)
+
+Trên cơ sở các yêu cầu của học phần **Big Data in Cloud Computing**, nhóm 4 thành viên đã lựa chọn hướng **Public Big Data Sets (Mục 3.1)** kết hợp phương án triển khai **CloudSim + Local Medallion Lakehouse (Mục 4.2)** với các thông số thực tế đã triển khai như sau:
+
+- **Bài toán (Problem Statement):** Dự báo không gian - thời gian chỉ số bụi mịn `PM2.5` trước 24 giờ (`t+24h`) trên quy mô liên vùng lãnh thổ Việt Nam dựa trên sự kết hợp giữa lịch sử quan trắc chất lượng không khí quốc gia (CEM/TEDP) và dữ liệu tái phân tích/dự báo khí tượng (Open-Meteo ERA5).
+- **Quy mô dữ liệu thực tế (Dataset Scale):**
+  - **Tầng Bronze (`lakehouse_storage/bronze/tedp_aqi_pm25_hourly.csv`):** **474.286 bản ghi theo giờ** thu thập từ 28 trạm quan trắc trên 14 tỉnh/thành phố, chuẩn hóa về 3 chỉ số ô nhiễm cốt lõi (`pm25`, `pm10`, `aqi`).
+  - **Tầng Silver cấp tỉnh (`data_test/cleaned_tedp_province_4y.csv` & `data_test/weather_openmeteo_province_4y.csv`):** Gom cụm **17 trạm thành viên đạt chuẩn độ phủ >= 80%** thành **11 nút tỉnh/thành phố** trải dài gần 3 năm liên tục (`2023-12-11 00:00:00` đến `2026-11-07 23:00:00`, **25.512 giờ/tỉnh**, **280.632 dòng** cho mỗi bảng TEDP và Open-Meteo).
+- **Mô hình Học máy & Suy luận Dự báo (Analytics & Serving):**
+  - **Mô hình trung tâm:** Mạng nơ-ron toàn cục **Spatio-Temporal Global ANN (With Spatial Attention)** huấn luyện trên **279.840 mẫu hợp lệ x 49 đặc trưng vật lý khí quyển**, đạt **Test RMSE = 17,68** (vượt Baseline Persistence `21,17` với mức cải thiện **+16,50%**, chiến thắng trên cả **11/11 tỉnh/thành phố**).
+  - **Dự báo 24 giờ thời gian thực:** Tích hợp pipeline [`code/crawl_data/fetch_forecast_24h.py`](file:///d:/năm%204/big%20data/Final_Project_Plan/code/crawl_data/fetch_forecast_24h.py) và [`code/training/du_bao.py`](file:///d:/năm%204/big%20data/Final_Project_Plan/code/training/du_bao.py) tự động thu thập dự báo khí tượng 24 giờ tới cho 11 tỉnh và xuất bảng dự báo `PM2.5` kèm phân loại cảnh báo `VN_AQI` theo từng giờ.
+- **Tài liệu tham chiếu chi tiết trong thư mục `docs/`:**
+  - Tổng quan kiến trúc và phân tích 5V: [`docs/project_overview.md`](file:///d:/năm%204/big%20data/Final_Project_Plan/docs/project_overview.md)
+  - Đặc tả tiền xử lý và chuẩn hóa dữ liệu: [`docs/preprocessing_data_normalization_plan.md`](file:///d:/năm%204/big%20data/Final_Project_Plan/docs/preprocessing_data_normalization_plan.md)
+  - Kiến trúc kỹ thuật pipeline End-to-End: [`docs/pipeline_detail.md`](file:///d:/năm%204/big%20data/Final_Project_Plan/docs/pipeline_detail.md)
+  - Hướng dẫn luồng hoạt động dễ hiểu: [`docs/overview.md`](file:///d:/năm%204/big%20data/Final_Project_Plan/docs/overview.md)
+  - Phân rã công việc và lịch trình: [`docs/task_breakdown_schedule.md`](file:///d:/năm%204/big%20data/Final_Project_Plan/docs/task_breakdown_schedule.md)

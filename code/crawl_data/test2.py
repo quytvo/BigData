@@ -21,9 +21,26 @@ BRONZE_DIR.mkdir(parents=True, exist_ok=True)
 
 BASE_URL = "https://tedp.vn/api"
 
-# Khoảng thời gian muốn crawl: Cấu hình 4 tháng (Tháng 6 -> Tháng 9/2026 = 122 ngày / ~4 tháng)
-START_DATE = os.getenv("TEDP_START_DATE", "2026-06-01T00:00:00")
-END_DATE = os.getenv("TEDP_END_DATE", "2026-09-30T23:59:59")
+# Khoảng thời gian muốn crawl: mặc định 4 NĂM GẦN NHẤT (giống chiến lược KnowAir
+# 2015-2018 = 4 năm trọn chu kỳ mùa), kết thúc lúc 23:59:59 của ngày hôm qua.
+#   - Đổi số năm         : set TEDP_YEARS=3
+#   - Cố định khoảng ngày : set TEDP_START_DATE=2022-11-07T00:00:00 / TEDP_END_DATE=...
+CRAWL_YEARS = int(os.getenv("TEDP_YEARS", "4"))
+
+
+def _default_window(years):
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    end = today - timedelta(seconds=1)                  # 23:59:59 hôm qua
+    try:
+        start = today.replace(year=today.year - years)
+    except ValueError:                                   # 29/02 -> 28/02
+        start = today.replace(year=today.year - years, day=28)
+    return start, end
+
+
+_DEFAULT_START, _DEFAULT_END = _default_window(CRAWL_YEARS)
+START_DATE = os.getenv("TEDP_START_DATE") or _DEFAULT_START.strftime("%Y-%m-%dT%H:%M:%S")
+END_DATE = os.getenv("TEDP_END_DATE") or _DEFAULT_END.strftime("%Y-%m-%dT%H:%M:%S")
 
 # Mỗi request lấy tối đa khoảng 24 giờ
 CHUNK_HOURS = 24
@@ -33,6 +50,19 @@ STATION_BATCH_SIZE = 30
 
 REQUEST_DELAY = 0.05
 REQUEST_TIMEOUT = 30
+MAX_RETRIES = 3
+
+# Checkpoint theo THÁNG: 4 năm ~ 1.461 ngày ~ hàng nghìn request -> nếu crawl bị
+# ngắt giữa chừng, chạy lại sẽ bỏ qua các tháng đã lưu đủ (resume).
+#   - Bắt buộc crawl lại toàn bộ: set TEDP_FORCE_RECRAWL=1
+RAW_PARTITION_DIR = BRONZE_DIR / "tedp_raw_monthly"
+RAW_PARTITION_DIR.mkdir(parents=True, exist_ok=True)
+FORCE_RECRAWL = os.getenv("TEDP_FORCE_RECRAWL", "0") == "1"
+
+RAW_COLUMNS = [
+    "province_id", "province_name", "station_id", "station_code", "station_name",
+    "latitude", "longitude", "datetime", "pm25", "aqi", "pm10",
+]
 
 HEADERS = {
     "Accept": "application/json",
@@ -53,21 +83,25 @@ def get_json(url, params=None):
     Gửi GET request và trả về JSON.
     """
 
-    try:
-        response = session.get(
-            url,
-            params=params,
-            timeout=REQUEST_TIMEOUT
-        )
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            response = session.get(
+                url,
+                params=params,
+                timeout=REQUEST_TIMEOUT
+            )
 
-        response.raise_for_status()
+            response.raise_for_status()
 
-        return response.json()
+            return response.json()
 
-    except requests.RequestException as e:
-        print(f"[ERROR] {url}")
-        print(e)
-        return None
+        except (requests.RequestException, ValueError) as e:
+            print(f"[ERROR] {url} (lần {attempt}/{MAX_RETRIES})")
+            print(e)
+            if attempt < MAX_RETRIES:
+                time.sleep(2 * attempt)
+
+    return None
 
 
 # ============================================================
@@ -168,6 +202,10 @@ def get_hourly_aqi(station_ids, start_time, end_time):
 
     data = get_json(url, params)
 
+    # None = request lỗi sau MAX_RETRIES lần (khác với "không có dữ liệu")
+    if data is None:
+        return None
+
     if not data:
         return []
 
@@ -234,10 +272,6 @@ def parse_aqi_records(records, station_lookup):
             "aqi": data.get("aqi"),
 
             "pm10": data.get("PM10"),
-            "no2": data.get("NO2"),
-            "so2": data.get("SO2"),
-            "o3": data.get("O3"),
-            "co": data.get("CO")
         }
 
         rows.append(row)
@@ -246,7 +280,78 @@ def parse_aqi_records(records, station_lookup):
 
 
 # ============================================================
-# 5. MAIN CRAWLER
+# 5. CRAWL THEO CỬA SỔ THỜI GIAN (CHECKPOINT THEO THÁNG)
+# ============================================================
+
+def month_windows(start, end):
+    """
+    Chia [start, end] thành từng tháng dương lịch.
+    Trả về (m_start, m_end, is_full_month): is_full_month = True nếu cửa sổ
+    phủ trọn tháng (dùng để quyết định có lưu checkpoint hay không).
+    """
+
+    cur = start
+
+    while cur < end:
+
+        month_first = cur.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        next_month = (month_first + timedelta(days=32)).replace(day=1)
+        m_end = min(next_month - timedelta(seconds=1), end)
+
+        is_full = (cur == month_first) and (m_end == next_month - timedelta(seconds=1))
+
+        yield cur, m_end, is_full
+
+        cur = next_month
+
+
+def crawl_range(station_ids, station_lookup, start, end):
+    """
+    Crawl [start, end] theo từng khối CHUNK_HOURS giờ x STATION_BATCH_SIZE trạm.
+    Trả về (rows, số request lỗi).
+    """
+
+    rows_out = []
+    n_failed = 0
+    current_start = start
+
+    while current_start < end:
+
+        current_end = min(
+            current_start + timedelta(hours=CHUNK_HOURS),
+            end
+        )
+
+        start_str = current_start.strftime("%Y-%m-%dT%H:%M:%S")
+        end_str = current_end.strftime("%Y-%m-%dT%H:%M:%S")
+
+        n_records = 0
+
+        for i in range(0, len(station_ids), STATION_BATCH_SIZE):
+
+            batch = station_ids[i:i + STATION_BATCH_SIZE]
+
+            records = get_hourly_aqi(batch, start_str, end_str)
+
+            if records is None:
+                n_failed += 1
+                print(f"  [FAIL] {start_str} | trạm {i + 1}-{i + len(batch)}")
+                continue
+
+            rows_out.extend(parse_aqi_records(records, station_lookup))
+            n_records += len(records)
+
+            time.sleep(REQUEST_DELAY)
+
+        print(f"  {start_str} -> {end_str}: {n_records} records")
+
+        current_start = current_end
+
+    return rows_out, n_failed
+
+
+# ============================================================
+# 6. MAIN CRAWLER
 # ============================================================
 
 def crawl():
@@ -312,19 +417,11 @@ def crawl():
     print(f"Saved: {stations_file}")
 
     # --------------------------------------------------------
-    # Time range
+    # Time range (mặc định 4 năm gần nhất) + crawl theo từng THÁNG
     # --------------------------------------------------------
 
     start = datetime.fromisoformat(START_DATE)
     end = datetime.fromisoformat(END_DATE)
-
-    all_rows = []
-
-    current_start = start
-
-    # --------------------------------------------------------
-    # Crawl in time chunks
-    # --------------------------------------------------------
 
     total_hours = int(
         (end - start).total_seconds() / 3600
@@ -335,74 +432,62 @@ def crawl():
     )
 
     print(
-        f"Approximately {total_hours:,} hours"
+        f"Approximately {total_hours:,} hours "
+        f"(~{total_hours / 24 / 365.25:.2f} năm)"
     )
 
-    while current_start < end:
+    station_ids = [
+        s["station_id"]
+        for s in stations
+        if s["station_id"]
+    ]
 
-        current_end = min(
-            current_start + timedelta(hours=CHUNK_HOURS),
-            end
+    print(f"Checkpoint dir: {RAW_PARTITION_DIR}")
+
+    month_frames = []
+    n_skipped, n_crawled, n_incomplete = 0, 0, 0
+
+    for m_start, m_end, is_full_month in month_windows(start, end):
+
+        tag = m_start.strftime("%Y-%m")
+        part_file = RAW_PARTITION_DIR / f"tedp_{tag}.csv"
+
+        # Tháng đã crawl đủ trước đó -> bỏ qua (resume)
+        if is_full_month and part_file.exists() and not FORCE_RECRAWL:
+            month_frames.append(
+                pd.read_csv(part_file, dtype={"province_id": str, "station_id": str})
+            )
+            n_skipped += 1
+            print(f"\n[SKIP] {tag}: đã có checkpoint {part_file.name}")
+            continue
+
+        print(f"\n[MONTH] {tag}: {m_start} -> {m_end}")
+
+        rows, n_failed = crawl_range(
+            station_ids,
+            station_lookup,
+            m_start,
+            m_end
         )
 
-        start_str = current_start.strftime(
-            "%Y-%m-%dT%H:%M:%S"
-        )
+        month_df = pd.DataFrame(rows, columns=RAW_COLUMNS)
+        month_frames.append(month_df)
+        n_crawled += 1
 
-        end_str = current_end.strftime(
-            "%Y-%m-%dT%H:%M:%S"
-        )
+        # Chỉ lưu checkpoint khi tháng TRỌN VẸN và KHÔNG có request lỗi
+        # -> lần chạy sau sẽ crawl lại các tháng thiếu/lỗi.
+        if is_full_month and n_failed == 0:
+            month_df.to_csv(part_file, index=False, encoding="utf-8-sig")
+            print(f"  -> {len(month_df):,} records, lưu {part_file.name}")
+        else:
+            n_incomplete += 1
+            reason = "tháng chưa trọn" if not is_full_month else f"{n_failed} request lỗi"
+            print(f"  -> {len(month_df):,} records, KHÔNG lưu checkpoint ({reason})")
 
-        print(
-            f"\nTime window: {start_str} -> {end_str}"
-        )
-
-        # ----------------------------------------------------
-        # Split stations into batches
-        # ----------------------------------------------------
-
-        station_ids = [
-            s["station_id"]
-            for s in stations
-            if s["station_id"]
-        ]
-
-        for i in range(
-            0,
-            len(station_ids),
-            STATION_BATCH_SIZE
-        ):
-
-            batch = station_ids[
-                i:i + STATION_BATCH_SIZE
-            ]
-
-            print(
-                f"  Stations "
-                f"{i + 1}-{i + len(batch)} "
-                f"/ {len(station_ids)}"
-            )
-
-            records = get_hourly_aqi(
-                batch,
-                start_str,
-                end_str
-            )
-
-            rows = parse_aqi_records(
-                records,
-                station_lookup
-            )
-
-            all_rows.extend(rows)
-
-            print(
-                f"    Received: {len(records)} records"
-            )
-
-            time.sleep(REQUEST_DELAY)
-
-        current_start = current_end
+    print(
+        f"\nTháng: crawl mới {n_crawled} | bỏ qua (đã có) {n_skipped} | "
+        f"chưa checkpoint {n_incomplete}"
+    )
 
     # ========================================================
     # DATAFRAME
@@ -410,13 +495,15 @@ def crawl():
 
     print("\n[3/4] Creating dataset...")
 
-    df = pd.DataFrame(all_rows)
+    month_frames = [f for f in month_frames if not f.empty]
 
-    if df.empty:
+    if not month_frames:
 
         print("No data returned.")
 
         return
+
+    df = pd.concat(month_frames, ignore_index=True)
 
     # --------------------------------------------------------
     # Convert datetime
@@ -437,10 +524,6 @@ def crawl():
         "pm25",
         "aqi",
         "pm10",
-        "no2",
-        "so2",
-        "o3",
-        "co"
     ]
 
     for column in numeric_columns:
@@ -462,6 +545,11 @@ def crawl():
             "datetime"
         ]
     )
+
+    # Chỉ giữ bản ghi nằm trong cửa sổ crawl (biên chunk có thể trả dư)
+    df = df[
+        (df["datetime"] >= start) & (df["datetime"] <= end)
+    ]
 
     # --------------------------------------------------------
     # Sort
@@ -553,10 +641,47 @@ def crawl():
         encoding="utf-8-sig"
     )
 
+    # --------------------------------------------------------
+    # Station coverage: với 4 năm, nhiều trạm có thể mới lắp
+    # -> cần biết trạm bắt đầu / kết thúc có dữ liệu khi nào
+    # --------------------------------------------------------
+
+    expected_hours = int((end - start).total_seconds() // 3600) + 1
+
+    station_cov = (
+        df.groupby(["province_name", "station_code", "station_id"])
+        .agg(
+            first_time=("datetime", "min"),
+            last_time=("datetime", "max"),
+            records=("datetime", "size"),
+            pm25_records=("pm25", "count"),
+        )
+        .reset_index()
+    )
+    station_cov["pm25_coverage_pct"] = (
+        100 * station_cov["pm25_records"] / expected_hours
+    ).round(2)
+    station_cov = station_cov.sort_values(["province_name", "station_code"])
+
+    print(f"\nStation coverage (trên {expected_hours:,} giờ của cửa sổ):")
+    print(
+        station_cov[
+            ["province_name", "station_code", "first_time", "last_time", "pm25_coverage_pct"]
+        ].to_string(index=False)
+    )
+
+    station_cov_file = BRONZE_DIR / "tedp_station_coverage.csv"
+    station_cov.to_csv(
+        station_cov_file,
+        index=False,
+        encoding="utf-8-sig"
+    )
+
     print("\nFiles created:")
     print(f"  - {stations_file}")
     print(f"  - {output_file}")
     print(f"  - {coverage_file}")
+    print(f"  - {station_cov_file}")
 
 
 # ============================================================

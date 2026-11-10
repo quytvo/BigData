@@ -1,0 +1,7 @@
+scale,engine,format,row_count,storage_size_mb,compression_ratio_pct,etl_runtime_sec,query_1prov_latency_ms,bytes_scanned_mb,pruning_speedup_factor
+1x,Pandas,CSV,280632,86.79,0.0,0.99,891.13,86.79,1.0
+1x,Spark,Parquet,280632,8.6,90.09,4.17,338.94,0.79,2.63
+10x,Pandas,CSV,2806320,867.91,0.0,8.37,8125.01,867.91,1.0
+10x,Spark,Parquet,2806320,86.05,90.09,3.74,276.09,7.9,29.43
+50x,Pandas,CSV,14031600,4339.56,0.0,53.02,51363.58,4339.56,1.0
+50x,Spark,Parquet,14031600,430.24,90.09,12.92,584.9,39.48,87.82

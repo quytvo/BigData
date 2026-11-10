@@ -1,0 +1,95 @@
+{
+  "province": "Hà Nội",
+  "slug": "ha_noi",
+  "n_rows_province": 25512,
+  "stations": [
+    "PROV_HA_NOI"
+  ],
+  "horizon_hours": 24,
+  "n_train": 17824,
+  "n_val": 2547,
+  "n_test": 5093,
+  "split_ratio": {
+    "train": 0.7,
+    "val": 0.1,
+    "test": 0.2
+  },
+  "train_end": "2025-12-24 15:00:00",
+  "val_end": "2026-04-09 18:00:00",
+  "models": [
+    "linear_regression"
+  ],
+  "features": [
+    "pm25_lag0",
+    "pm25_lag1",
+    "pm25_lag3",
+    "pm25_lag6",
+    "pm25_lag12",
+    "pm25_lag24",
+    "pm25_roll6",
+    "pm25_roll24",
+    "temperature_2m",
+    "relative_humidity_2m",
+    "dew_point_2m",
+    "surface_pressure",
+    "precipitation",
+    "wind_speed_10m",
+    "wind_direction_10m",
+    "boundary_layer_height",
+    "wind_dir_sin",
+    "wind_dir_cos",
+    "dew_point_deficit",
+    "ventilation_coef",
+    "temp_diff_24h",
+    "pressure_diff_24h",
+    "pblh_diff_24h",
+    "precip_sum_24h",
+    "hour",
+    "day_of_week",
+    "is_weekend"
+  ],
+  "baseline": {
+    "val": {
+      "rmse": 33.04075650506671,
+      "mae": 25.770657316283593,
+      "r2": 0.3098738285224778
+    },
+    "test": {
+      "rmse": 24.00883618195314,
+      "mae": 17.998697177921667,
+      "r2": 0.2731095438634641
+    }
+  },
+  "results": {
+    "linear_regression": {
+      "best_iteration": null,
+      "val": {
+        "rmse": 26.885531419241424,
+        "mae": 20.80004069322847,
+        "r2": 0.5430530500371775
+      },
+      "test": {
+        "rmse": 21.344441139762218,
+        "mae": 16.704402086072417,
+        "r2": 0.4254916747881715
+      },
+      "rmse_improvement_pct": 11.09756017325689,
+      "beats_baseline": true,
+      "per_station": {
+        "PROV_HA_NOI": {
+          "n_test": 5093,
+          "baseline": {
+            "rmse": 24.00883618195314,
+            "mae": 17.998697177921667,
+            "r2": 0.2731095438634641
+          },
+          "linear_regression": {
+            "rmse": 21.344441139762218,
+            "mae": 16.704402086072417,
+            "r2": 0.4254916747881715
+          }
+        }
+      }
+    }
+  }
+}

@@ -38,17 +38,13 @@ REPORT_FILE = BRONZE_DIR / "preprocessing_report.txt"
 
 # Nguong loai bo gia tri phi ly (outlier cung theo QCVN)
 THRESHOLDS = {
-    "pm25": (0,   500),   # ug/m3
-    "pm10": (0,   600),   # ug/m3
-    "no2" : (0,  1000),   # ug/m3
-    "so2" : (0,  1000),   # ug/m3
-    "o3"  : (0,   500),   # ug/m3
-    "co"  : (0, 30000),   # ug/m3
+    "pm25": (0,   500),   # AQI sub-index / ug/m3
+    "pm10": (0,   600),   # AQI sub-index / ug/m3
     "aqi" : (0,   500),
 }
 
 # Cot chi so do dac (se duoc noi suy)
-POLLUTANT_COLS = ["pm25", "pm10", "no2", "so2", "o3", "co", "aqi"]
+POLLUTANT_COLS = ["pm25", "pm10", "aqi"]
 
 # Phan nguong AQI (US EPA / TCVN)
 AQI_BINS   = [0, 50, 100, 150, 200, 300, 500]
@@ -98,7 +94,11 @@ def load_and_profile(path):
         else:
             raise FileNotFoundError(f"Khong tim thay tap tin dau vao: {path}")
 
-    df = pd.read_csv(path, low_memory=False)
+    df = pd.read_csv(
+        path,
+        dtype={"province_id": str, "station_id": str, "station_code": str},
+        low_memory=False,
+    )
     report.log(f"File      : {os.path.abspath(path)}")
     report.log(f"Shape     : {df.shape[0]:,} hang  x  {df.shape[1]} cot")
     report.log(f"Columns   : {df.columns.tolist()}")
@@ -194,6 +194,11 @@ def handle_missing(df):
         # Danh flag truoc khi noi suy (luon tao cot *_imputed de co dinh schema)
         flag_col = f"{col}_imputed"
         df[flag_col] = df[col].isna().astype(int)
+        # Flag rieng cho gia tri bi fill bang MEDIAN (gap > 3h) -> day KHONG phai
+        # gia tri do that; buoc tinh trung binh theo tinh (sync_tedp_province.py)
+        # se LOAI cac gia tri nay de khong lam sai lech trung binh tinh.
+        median_col = f"{col}_median_filled"
+        df[median_col] = 0
 
         before = df[col].isna().sum()
         if before == 0:
@@ -215,6 +220,7 @@ def handle_missing(df):
 
         # Phan con lai (gap > 3h) -> fill bang median cua tram do
         if after > 0:
+            df[median_col] = df[col].isna().astype(int)
             station_median = df.groupby("station_id")[col].transform("median")
             df[col] = df[col].fillna(station_median)
 
@@ -349,10 +355,21 @@ def main():
     df = normalize_names(df)
     final_report_and_save(df)
 
-    print("\n[DONE] Tien xu ly hoan tat!")
+    print("\n[DONE] Tien xu ly cap tram hoan tat!")
     print(f"   Input : {INPUT_FILE}")
     print(f"   Output: {OUTPUT_FILE}")
     print(f"   Report: {REPORT_FILE}")
+
+    # Buoc 9: Tu dong chay loc tinh + tinh trung binh cac tram thuoc tinh
+    # de xuat ra file clean_data cuoi cung (data_test/cleaned_tedp_province_4y.csv)
+    print("\n" + "=" * 65)
+    print("  BUOC 9 -- LOC TINH & TINH TRUNG BINH CAC TRAM THUOC TINH")
+    print("=" * 65)
+    current_dir = Path(__file__).resolve().parent
+    if str(current_dir) not in sys.path:
+        sys.path.insert(0, str(current_dir))
+    import sync_tedp_province
+    sync_tedp_province.main()
 
 
 if __name__ == "__main__":

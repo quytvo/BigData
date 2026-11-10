@@ -1,0 +1,37 @@
+# Dockerfile.spark - Apache Spark 3.5.1 Container for Air Quality Medallion Lakehouse
+# Base image: Official Apache Spark 3.5.1 with Python 3
+FROM apache/spark:3.5.1-python3
+
+# Elevate privileges to install OS packages & Python dependencies
+USER root
+
+# Configure standard environment variables
+ENV SPARK_HOME=/opt/spark \
+    PYTHONUNBUFFERED=1 \
+    PYSPARK_PYTHON=python3 \
+    PYSPARK_DRIVER_PYTHON=python3 \
+    PATH="/opt/spark/bin:${PATH}" \
+    PYTHONPATH="/opt/spark/python:/opt/spark/python/lib/py4j-0.10.9.7-src.zip:/workspace"
+
+# Upgrade pip and install required packages
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+    numpy \
+    pandas \
+    requests \
+    openmeteo-requests \
+    scikit-learn \
+    optuna \
+    pyarrow \
+    psutil \
+    pytest \
+    --extra-index-url https://download.pytorch.org/whl/cpu torch
+
+# Set container working directory to project workspace mount
+WORKDIR /workspace
+
+# Expose Spark Web UI port
+EXPOSE 4040
+
+# Default shell
+CMD ["/bin/bash"]

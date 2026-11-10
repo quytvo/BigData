@@ -1,0 +1,67 @@
+======================================================================================
+PYSPARK LAKEHOUSE GOLD FEATURE ENGINEERING DATA DIFF VERIFICATION REPORT
+======================================================================================
+Gold Target Directory : /workspace/lakehouse_storage/gold/global_ann_features
+Reference Dataset     : /workspace/data_test/cleaned_tedp_province_4y.csv & /workspace/data_test/weather_openmeteo_province_4y.csv
+Cutoff Filter Applied : None (Full 280,104 rows)
+Total Rows Verified   : 280,104 (Spark) vs 280,104 (Pandas)
+Numerical Tolerance   : < 1.0e-05
+--------------------------------------------------------------------------------------
+Feature / Metric Column             | Max Abs Diff   | Mean Abs Diff  | NaNs   | Status
+--------------------------------------------------------------------------------------
+y                                   | 8.526513e-14   | 5.757144e-16   | 0      | PASS
+pm25_lag0                           | 8.526513e-14   | 5.749835e-16   | 0      | PASS
+pm25_lag1                           | 8.526513e-14   | 5.749327e-16   | 0      | PASS
+pm25_lag3                           | 8.526513e-14   | 5.748630e-16   | 0      | PASS
+pm25_lag6                           | 8.526513e-14   | 5.748186e-16   | 0      | PASS
+pm25_lag12                          | 8.526513e-14   | 5.745522e-16   | 0      | PASS
+pm25_lag24                          | 8.526513e-14   | 5.744381e-16   | 0      | PASS
+pm25_roll6                          | 8.526513e-14   | 3.457244e-15   | 0      | PASS
+pm25_roll24                         | 1.136868e-13   | 5.893677e-15   | 0      | PASS
+pm25_diff_1h                        | 8.526513e-14   | 9.990501e-16   | 0      | PASS
+pm25_diff_24h                       | 8.526513e-14   | 1.035428e-15   | 0      | PASS
+pm25_std24                          | 1.314375e-07   | 4.678699e-12   | 0      | PASS
+pm10_lag0                           | 2.842171e-14   | 4.587141e-16   | 0      | PASS
+aqi_lag0                            | 8.526513e-14   | 5.855734e-16   | 0      | PASS
+temperature_2m                      | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+relative_humidity_2m                | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+dew_point_2m                        | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+surface_pressure                    | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+precipitation                       | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+wind_speed_10m                      | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+wind_direction_10m                  | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+boundary_layer_height               | 4.547474e-13   | 1.383458e-15   | 0      | PASS
+wind_dir_sin                        | 1.110223e-16   | 1.368684e-19   | 0      | PASS
+wind_dir_cos                        | 1.110223e-16   | 6.569684e-20   | 0      | PASS
+dew_point_deficit                   | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+ventilation_coef                    | 1.818989e-12   | 3.847406e-15   | 0      | PASS
+temp_diff_24h                       | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+pressure_diff_24h                   | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+pblh_diff_24h                       | 6.821210e-13   | 2.550751e-15   | 0      | PASS
+precip_sum_24h                      | 1.136868e-13   | 3.007153e-15   | 0      | PASS
+hour                                | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+day_of_week                         | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+hour_sin                            | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+hour_cos                            | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+dow_sin                             | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+dow_cos                             | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+latitude_norm                       | 3.330669e-16   | 3.027881e-17   | 0      | PASS
+longitude_norm                      | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+is_weekend                          | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+station_id_28429342215451431160939106654 | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+station_id_28429342215451431160939106668 | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+station_id_28429342215451431160939106697_hcm | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+station_id_28429342215451431160939106671 | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+station_id_28429342215451431160939106677 | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+station_id_28429342215451431160939106674 | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+station_id_28429342215451431160939106682 | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+station_id_28429342215451431160939106688 | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+station_id_28429342215451431160939106694 | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+station_id_28429342215451431160939106700 | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+station_id_28429342215451431160939106662 | 0.000000e+00   | 0.000000e+00   | 0      | PASS
+======================================================================================
+OVERALL MAXIMUM ABSOLUTE ERROR: 1.31437461e-07
+TOTAL VERIFIED COLUMNS        : 50 (49 features + 1 label y)
+TOTAL FAILED COLUMNS          : 0
+DATA DIFF VERIFICATION RESULT : PASSED (100% BIT-PARITY)
+======================================================================================
