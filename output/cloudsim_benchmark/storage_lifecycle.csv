@@ -1,0 +1,10 @@
+scale,layer,class_name,size_gb,rate_usd_gb_month,months,cost_usd,size_basis
+1x,Silver+Gold,Hot Standard,0.056406,0.02,14,0.01579367,measured TEDP Parquet; 1x weather/Gold bytes scaled
+1x,Bronze raw,Warm Nearline,0.133881,0.01,1,0.00133881,project-wide raw TEDP+ERA5 bytes scaled
+1x,Bronze raw,Cold Archive,0.133881,0.0025,13,0.00435114,project-wide raw TEDP+ERA5 bytes scaled
+10x,Silver+Gold,Hot Standard,0.56409,0.02,14,0.15794514,measured TEDP Parquet; 1x weather/Gold bytes scaled
+10x,Bronze raw,Warm Nearline,1.338812,0.01,1,0.01338812,project-wide raw TEDP+ERA5 bytes scaled
+10x,Bronze raw,Cold Archive,1.338812,0.0025,13,0.04351138,project-wide raw TEDP+ERA5 bytes scaled
+50x,Silver+Gold,Hot Standard,2.820459,0.02,14,0.78972851,measured TEDP Parquet; 1x weather/Gold bytes scaled
+50x,Bronze raw,Warm Nearline,6.694059,0.01,1,0.06694059,project-wide raw TEDP+ERA5 bytes scaled
+50x,Bronze raw,Cold Archive,6.694059,0.0025,13,0.21755691,project-wide raw TEDP+ERA5 bytes scaled

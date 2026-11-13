@@ -14,6 +14,7 @@ SPEC.loader.exec_module(MODULE)
 run = MODULE.run
 sys.path.insert(0, str(SCRIPT.parent))
 from run_cloudsim_plus import container_path
+from analyze_cloud_costs import analyze
 
 
 class CloudSimBenchmarkTest(unittest.TestCase):
@@ -112,6 +113,29 @@ class CloudSimBenchmarkTest(unittest.TestCase):
         )
         with self.assertRaises(ValueError):
             container_path(Path(tempfile.gettempdir()) / "outside-results.csv")
+
+    def test_clo5_cost_totals_and_marginal_tradeoff(self):
+        root = SCRIPT.parents[2]
+        source = root / "output/cloudsim_benchmark"
+        with tempfile.TemporaryDirectory(dir=root / "output") as temp:
+            folder = Path(temp)
+            rows, lifecycle = analyze(
+                source / "storage_benchmark.csv", source / "cloudsim_results.csv",
+                source / "workload_profile.csv", folder / "cost.csv",
+                folder / "lifecycle.csv", root / "lakehouse_storage/bronze",
+                root / "lakehouse_storage/silver/weather_province")
+            self.assertEqual((len(rows), len(lifecycle)), (9, 9))
+            self.assertTrue(all(r["same_region_same_zone_io_usd_per_run"] == 0 for r in rows))
+            self.assertTrue(all(not r["min_60s_billing_binds"] for r in rows))
+            for scale in ("1x", "10x", "50x"):
+                single, balanced, maximum = [r for r in rows if r["scale"] == scale]
+                self.assertGreater(maximum["marginal_compute_usd_per_minute_saved"],
+                                   balanced["marginal_compute_usd_per_minute_saved"])
+                self.assertAlmostEqual(
+                    balanced["steady_month_one_run_total_usd"],
+                    balanced["compute_usd_per_run"] + balanced["steady_storage_usd_per_month"],
+                    places=7)
+            self.assertEqual([r["months"] for r in lifecycle[:3]], [14, 1, 13])
 
 
 if __name__ == "__main__":

@@ -92,6 +92,10 @@ Lệnh cuối chạy CloudSim Plus Java 8.5.7 trong Docker, xuất dấu vết C
 kết quả 9 kịch bản. Xem [hướng dẫn benchmark](docs/cloudsim_benchmark.md) để
 biết cách chạy đo dữ liệu bằng Docker và các giả định mô phỏng.
 
+Để tổng hợp chi phí compute, truyền dữ liệu và lưu trữ theo vòng đời Bronze,
+Silver, Gold, chạy `python code/simulation/analyze_cloud_costs.py` rồi xem
+[phân tích đánh đổi CLO5](docs/clo5_cloud_cost_tradeoff.md).
+
 ---
 
 ## 🔗 Cấu trúc Thư mục Dự án
