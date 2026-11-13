@@ -10,3 +10,9 @@ __pycache__/
 /data_test/cleaned_tedp_province_4y.csv
 /lakehouse_storage/bronze/tedp_aqi_pm25_hourly.csv
 /lakehouse_storage/bronze/cleaned_tedp.csv
+/output/pipeline_backup_*/
+/output/spark_event_logs/
+/code/simulation/cloudsim_plus/.m2/
+/code/simulation/cloudsim_plus/target/
+/output/cloudsim_benchmark/cloudsim_plan.csv
+/output/cloudsim_benchmark/cloudsim_events.csv

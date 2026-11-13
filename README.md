@@ -84,9 +84,13 @@ python code/training/du_bao.py --province "Đà Nẵng"
 # 5. Huấn luyện mô hình Spatio-Temporal Global ANN (tự động đọc 49 đặc trưng từ Gold Parquet)
 python code/training/train_global_ann.py
 
-# 6. Đo tải tính toán thực nghiệm cho mô phỏng CloudSim (Task T4.1)
-python code/simulation/profile_workload.py
+# 6. Chạy CloudSim sau khi đo workload và storage theo docs/cloudsim_benchmark.md
+python code/simulation/run_cloudsim_benchmark.py
 ```
+
+Lệnh cuối chạy CloudSim Plus Java 8.5.7 trong Docker, xuất dấu vết Cloudlet và
+kết quả 9 kịch bản. Xem [hướng dẫn benchmark](docs/cloudsim_benchmark.md) để
+biết cách chạy đo dữ liệu bằng Docker và các giả định mô phỏng.
 
 ---
 

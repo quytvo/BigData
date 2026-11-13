@@ -1,0 +1,10 @@
+scale,config,config_name,region,vm_type,vm_count,vcpus_per_vm,ram_gb_per_vm,price_usd_per_hour,makespan_sec,speedup,cpu_efficiency_pct,simulated_cost_usd,boot_sec,network_mbps,c2_core_factor,storage_format,measured_query_sec_per_province,measured_scanned_mb_per_province,ann_cpu_seconds_scaled,simulation_engine
+1x,single,Config 1 (Single VM),asia-southeast1,e2-standard-2,1,2,8,0.0736,418.8085,1.0,90.1775,0.008566,30.0,1000.0,1.0,csv,0.6138,70.89,726.87,CloudSim Plus 8.5.7
+1x,balanced,Config 2 (Balanced Cluster),asia-southeast1,e2-standard-4,3,4,16,0.1472,215.4,1.9443,29.2152,0.026496,30.0,1000.0,1.0,parquet,0.286,0.79,726.87,CloudSim Plus 8.5.7
+1x,max_parallel,Config 3 (Max-Parallel Cluster),asia-southeast1,c2-standard-8,9,8,32,0.4578,121.941,3.4345,8.5977,0.140773,30.0,1000.0,1.0,parquet,0.286,0.79,726.87,CloudSim Plus 8.5.7
+10x,single,Config 1 (Single VM),asia-southeast1,e2-standard-2,1,2,8,0.0736,3892.0889,1.0,97.0582,0.07959,30.0,1000.0,1.0,csv,3.6724,708.85,7268.7,CloudSim Plus 8.5.7
+10x,balanced,Config 2 (Balanced Cluster),asia-southeast1,e2-standard-4,3,4,16,0.1472,1873.2901,2.0777,33.6082,0.229877,30.0,1000.0,1.0,parquet,0.193,7.9,7268.7,CloudSim Plus 8.5.7
+10x,max_parallel,Config 3 (Max-Parallel Cluster),asia-southeast1,c2-standard-8,9,8,32,0.4578,944.0459,4.1228,11.1143,1.081552,30.0,1000.0,1.0,parquet,0.193,7.9,7268.7,CloudSim Plus 8.5.7
+50x,single,Config 1 (Single VM),asia-southeast1,e2-standard-2,1,2,8,0.0736,19297.7268,1.0,97.8788,0.394537,30.0,1000.0,1.0,csv,13.7488,3544.27,36343.5,CloudSim Plus 8.5.7
+50x,balanced,Config 2 (Balanced Cluster),asia-southeast1,e2-standard-4,3,4,16,0.1472,9243.4571,2.0877,34.057,1.133931,30.0,1000.0,1.0,parquet,0.3673,39.48,36343.5,CloudSim Plus 8.5.7
+50x,max_parallel,Config 3 (Max-Parallel Cluster),asia-southeast1,c2-standard-8,9,8,32,0.4578,4598.4297,4.1966,11.4097,5.263555,30.0,1000.0,1.0,parquet,0.3673,39.48,36343.5,CloudSim Plus 8.5.7

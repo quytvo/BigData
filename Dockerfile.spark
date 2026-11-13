@@ -20,6 +20,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
         pandas \
         pyarrow \
         psutil \
+        scikit-learn \
         pytest \
         --extra-index-url https://download.pytorch.org/whl/cpu torch
 
