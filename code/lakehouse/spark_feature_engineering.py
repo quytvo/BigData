@@ -220,6 +220,7 @@ def build_gold_features_dataframe(
     silver_tedp_dir: Path,
     silver_weather_dir: Path,
     cutoff_target_date: Optional[str] = None,
+    province_name: Optional[str] = None,
 ) -> DataFrame:
     """Executes pure PySpark Catalyst Window transformations to produce the 49 Gold features.
 
@@ -244,6 +245,10 @@ def build_gold_features_dataframe(
 
     logger.info("Loading Silver Weather province dataset from: %s", silver_weather_dir)
     df_wea = spark.read.parquet(str(silver_weather_dir))
+    if province_name is not None:
+        # Apply partition pruning before the join and window calculations.
+        df_tedp = df_tedp.filter(F.col("province_name") == province_name)
+        df_wea = df_wea.filter(F.col("province_name") == province_name)
 
     # Aliasing weather columns to cur_* to prevent name collision with future weather features
     df_wea_sub = df_wea.select(

@@ -1,0 +1,7 @@
+﻿scale,engine,format,row_count,storage_size_mb,etl_runtime_sec,query_1prov_latency_ms,bytes_scanned_mb,measurement_source,query_province,selected_provinces
+1x,Spark,Parquet,229608,7.09,3.84,285.97,0.79,measured,Hà Nội,Quảng Ngãi|Bắc Ninh|Ninh Bình|Hà Nội|Hưng Yên|Hải Phòng|Đà Nẵng|HCM|Gia Lai
+1x,Spark,CSV,229608,70.89,1.2344,613.82,70.89,measured,Hà Nội,Quảng Ngãi|Bắc Ninh|Ninh Bình|Hà Nội|Hưng Yên|Hải Phòng|Đà Nẵng|HCM|Gia Lai
+10x,Spark,Parquet,2296080,70.93,2.38,192.99,7.9,measured,Hà Nội,Quảng Ngãi|Bắc Ninh|Ninh Bình|Hà Nội|Hưng Yên|Hải Phòng|Đà Nẵng|HCM|Gia Lai
+10x,Spark,CSV,2296080,708.85,4.7647,3672.41,708.85,measured,Hà Nội,Quảng Ngãi|Bắc Ninh|Ninh Bình|Hà Nội|Hưng Yên|Hải Phòng|Đà Nẵng|HCM|Gia Lai
+50x,Spark,Parquet,11480400,354.66,8.32,367.28,39.48,measured,Hà Nội,Quảng Ngãi|Bắc Ninh|Ninh Bình|Hà Nội|Hưng Yên|Hải Phòng|Đà Nẵng|HCM|Gia Lai
+50x,Spark,CSV,11480400,3544.27,17.5395,13748.82,3544.27,measured,Hà Nội,Quảng Ngãi|Bắc Ninh|Ninh Bình|Hà Nội|Hưng Yên|Hải Phòng|Đà Nẵng|HCM|Gia Lai

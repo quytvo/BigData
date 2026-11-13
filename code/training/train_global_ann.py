@@ -171,16 +171,21 @@ def load_all_data_with_station_id(use_parquet: bool = True) -> pd.DataFrame:
 
 def load_features_dataset(
     use_parquet: bool = True,
+    provinces: Optional[List[str]] = None,
+    gold_features_dir: Optional[Path] = None,
+    allow_csv_fallback: bool = True,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, List[str], List[str], List[str]]:
     """
     Nạp dữ liệu đặc trưng phục vụ huấn luyện Spatio-Temporal Global ANN.
     Ưu tiên nạp trực tiếp 49 đặc trưng từ Gold Parquet (lakehouse_storage/gold/global_ann_features/).
     Nếu không có Parquet hoặc use_parquet=False, tự động fallback đọc từ CSV và sinh đặc trưng qua Pandas.
     """
-    if use_parquet and GOLD_FEATURES_DIR.exists():
+    parquet_dir = gold_features_dir or GOLD_FEATURES_DIR
+    if use_parquet and parquet_dir.exists():
         try:
-            print(f"[*] Nạp dữ liệu 49 đặc trưng từ Gold Parquet ({GOLD_FEATURES_DIR})...")
-            feats = pd.read_parquet(GOLD_FEATURES_DIR)
+            print(f"[*] Nạp dữ liệu 49 đặc trưng từ Gold Parquet ({parquet_dir})...")
+            parquet_filters = [("province_name", "in", provinces)] if provinces is not None else None
+            feats = pd.read_parquet(parquet_dir, filters=parquet_filters)
             if "province_name" in feats.columns:
                 feats["province_name"] = feats["province_name"].astype(str)
             if "station_code" in feats.columns:
@@ -223,7 +228,12 @@ def load_features_dataset(
             print(f"[THÀNH CÔNG] Đã nạp {len(feats):,} mẫu từ Gold Parquet Lakehouse ({len(all_feature_cols)} đặc trưng).")
             return feats, station_meta, continuous_cols, binary_and_station_cols, all_feature_cols
         except Exception as e:
+            if not allow_csv_fallback:
+                raise RuntimeError(f"Cannot load measured Gold Parquet from {parquet_dir}") from e
             print(f"[CẢNH BÁO] Không thể nạp Gold Parquet ({e}). Đang fallback sang CSV + Pandas...")
+
+    if not allow_csv_fallback:
+        raise FileNotFoundError(f"Measured Gold Parquet is missing: {parquet_dir}")
 
     # Fallback sang nạp CSV và sinh đặc trưng bằng Pandas
     print("[*] Đang nạp dữ liệu từ CSV và tạo 49 đặc trưng bằng Pandas...")
